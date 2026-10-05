@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Watch and Earn</title>
+    <!-- Telegram Mini App Script Support -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -47,9 +49,9 @@
         .adm-tab-btn { background: #0b142d; border: 1px solid #1c2b55; color: #8da2c4; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .adm-tab-btn.active { background: #1c85ff; color: #fff; border-color: #1c85ff; }
 
-        /* Login Overlay */
-        #login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 14, 34, 0.96); z-index: 99999999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: #121c38; border: 1px solid #1c85ff; border-radius: 20px; padding: 30px 24px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        /* Login Overlay (Popup Modal) */
+        #login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 14, 34, 0.88); z-index: 99999999; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { position: relative; background: #121c38; border: 1px solid #1c85ff; border-radius: 20px; padding: 30px 24px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .btn-google { background: #fff; color: #000; border: none; border-radius: 12px; padding: 14px 20px; width: 100%; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     </style>
 </head>
@@ -57,13 +59,14 @@
 <body>
     <div id="toast"></div>
 
-    <!-- GOOGLE LOGIN REQUIRED MODAL -->
+    <!-- GOOGLE LOGIN MODAL (လိုအပ်မှသာ ပေါ်လာမည့် Popup) -->
     <div id="login-overlay">
         <div class="login-card">
+            <button onclick="document.getElementById('login-overlay').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#8da2c4;font-size:22px;cursor:pointer;">✕</button>
             <div style="font-size: 40px; margin-bottom: 12px;">🪙</div>
             <h2 style="color: #ffd700; font-size: 22px; margin-bottom: 8px;">Watch and Earn</h2>
             <p style="color: #8da2c4; font-size: 13px; margin-bottom: 24px; line-height: 1.5;">
-                Coin များနှင့် ဆုလာဘ်များကို လုံခြုံစွာ သိမ်းဆည်းနိုင်ရန် သင်၏ Google Account ဖြင့် Sign in ဝင်ရောက်ပေးပါ။
+                ဂိမ်းကစားရန်၊ Points စုဆောင်းရန်နှင့် ငွေထုတ်ယူနိုင်ရန် သင်၏ Google Account ဖြင့် Sign in ဝင်ရောက်ပေးပါ။
             </p>
             <button class="btn-google" onclick="window.triggerGoogleSignIn()">
                 <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
@@ -80,16 +83,16 @@
             <button onclick="openAdminAuth()" title="Admin Panel">⋮</button>
         </div>
 
-        <!-- Google User Profile Bar -->
+        <!-- Google User Profile Bar (အကောင့်မဝင်ထားပါက Sign in with Google ပြသမည်) -->
         <div id="user-bar" style="background:#0b142d;padding:8px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);">
             <div style="display:flex;align-items:center;gap:10px;">
                 <img id="user-avatar" src="https://via.placeholder.com/28" style="width:28px;height:28px;border-radius:50%;border:1px solid #1c85ff;">
                 <div>
-                    <div id="user-display-name" style="font-size:12px;font-weight:700;color:#fff;">Loading...</div>
-                    <div id="user-email-text" style="font-size:10px;color:#8da2c4;">Checking auth...</div>
+                    <div id="user-display-name" style="font-size:12px;font-weight:700;color:#fff;">ဧည့်သည် (Guest)</div>
+                    <div id="user-email-text" style="font-size:10px;color:#8da2c4;">အကောင့်ဝင်မထားပါ</div>
                 </div>
             </div>
-            <button onclick="window.triggerGoogleSignOut()" style="background:#232b3e;color:#cbd5e1;border:none;padding:5px 12px;border-radius:15px;font-size:11px;font-weight:600;cursor:pointer;">Logout</button>
+            <button id="auth-action-btn" onclick="handleAuthButtonClick()" style="background:#1c85ff;color:#fff;border:none;padding:6px 14px;border-radius:15px;font-size:11px;font-weight:700;cursor:pointer;">Sign in with Google</button>
         </div>
 
         <div class="content">
@@ -150,7 +153,7 @@
 
             <!-- 3. PROFILE SCREEN (REFERRAL + မှတ်တမ်းများ) -->
             <div id="page-friends" class="page">
-                <!-- Card 1: Your Invite Link -->
+                <!-- Card 1: Your WebApp Direct Invite Link -->
                 <div class="card" style="padding: 16px 18px; margin-bottom: 12px; background: #111625; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06);">
                     <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
                         <div style="width:48px;height:48px;border-radius:14px;background:#161e31;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -160,7 +163,7 @@
                             </svg>
                         </div>
                         <div style="min-width:0;">
-                            <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:3px;">Your Invite Link</div>
+                            <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:3px;">Your WebApp Link</div>
                             <div id="display-invite-link" style="font-size:12px;color:#8da2c4;word-break:break-all;line-height:1.3;">Loading link...</div>
                         </div>
                     </div>
@@ -369,9 +372,29 @@
         var points = 0;
         var friends = 0;
         var myUserId = '';
-        var myUserName = 'User';
+        var myUserName = 'ဧည့်သည် (Guest)';
         var myUserEmail = '';
         var myInviteLink = window.location.origin + window.location.pathname;
+
+        // Login ဝင်ထားခြင်းရှိမရှိ စစ်ဆေးပြီး မဝင်ရသေးပါက Login တောင်းဆိုမည့် Helper Function
+        function requireAuth(actionName) {
+            if (!window.currentAuthUser) {
+                var overlay = document.getElementById('login-overlay');
+                if (overlay) overlay.style.display = 'flex';
+                showToast((actionName || 'ဤလုပ်ဆောင်ချက်') + ' ပြုလုပ်ရန် Google အကောင့် Sign in ဝင်ပေးပါ');
+                return false;
+            }
+            return true;
+        }
+
+        // Header ဘားရှိ Sign in / Logout ခလုတ်ကို နှိပ်သည့်အခါ
+        function handleAuthButtonClick() {
+            if (window.currentAuthUser) {
+                window.triggerGoogleSignOut();
+            } else {
+                window.triggerGoogleSignIn();
+            }
+        }
 
         function showToast(txt) {
             var t = document.getElementById('toast');
@@ -385,7 +408,11 @@
         }
 
         function closeApp() {
-            showToast('App ပိတ်ရန် Browser Tab ကို ပိတ်ပါ');
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.close();
+            } else {
+                showToast('App ပိတ်ရန် Browser Tab ကို ပိတ်ပါ');
+            }
         }
 
         function syncBal(){
@@ -559,6 +586,8 @@
         }
 
         function handleTaskClick(btn) {
+            if (!requireAuth('Task လုပ်ဆောင်ရန်')) return;
+
             var id = btn.getAttribute('data-id');
             var link = decodeURI(btn.getAttribute('data-link'));
             var reward = parseInt(btn.getAttribute('data-reward'), 10) || 0;
@@ -588,6 +617,8 @@
         }
 
         function finishTask(id, reward){
+            if (!requireAuth('ဆုလာဘ် ရယူရန်')) return;
+
             if(completedTaskIds.indexOf(id) !== -1) {
                 showToast('ဤ Task ကို ရယူပြီးဖြစ်ပါသည်!');
                 return;
@@ -718,7 +749,6 @@
             var shareTitle = 'Watch and Earn';
             var shareText = '🪙 Watch and Earn တွင် Coins များစုဆောင်းပြီး ငွေသားထုတ်ယူလိုက်ပါ! အခုပဲ ဝင်ရောက်ကစားရန် လင့်ခ်:\n' + link;
 
-            // ဖုန်း၏ မူရင်း Native Share Box (Telegram, Messenger, Viber စသည်တို့သို့ တိုက်ရိုက် Share နိုင်ရန်)
             if (navigator.share) {
                 navigator.share({
                     title: shareTitle,
@@ -726,21 +756,19 @@
                     url: link
                 }).then(function() {
                     showToast('မျှဝေခြင်း အောင်မြင်ပါသည်! 🎉');
-                }).catch(function(err) {
-                    // Share မလုပ်ဘဲ Cancel လုပ်လိုက်ပါက Copy သာ ကူးပေးမည်
-                    copyToClipboard(shareText);
+                }).catch(function() {
+                    fallbackCopy(shareText);
                 });
             } else {
-                copyToClipboard(shareText);
+                var tgShareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('🪙 Watch and Earn တွင် Coins များစုဆောင်းပြီး ငွေသားထုတ်ယူလိုက်ပါ!');
+                window.open(tgShareUrl, '_blank');
             }
         }
 
-        function copyToClipboard(text) {
+        function fallbackCopy(text) {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(function() {
-                    showToast('Invite Link နှင့် စာသားကို Copy ကူးပြီးပါပြီ! 📋');
-                }).catch(function() {
-                    prompt('Invite Link ကို Copy ကူးပါ:', text);
+                    showToast('Invite Link ကို Copy ကူးပြီးပါပြီ! 📋');
                 });
             } else {
                 prompt('Invite Link ကို Copy ကူးပါ:', text);
@@ -748,6 +776,8 @@
         }
 
         function claimReferralReward() {
+            if (!requireAuth('Referral ဆု ထုတ်ယူရန်')) return;
+
             if (refAvailable <= 0) {
                 showToast('ထုတ်ယူရန် Referral ဆု မရှိသေးပါ!');
                 return;
@@ -768,6 +798,8 @@
         }
 
         function submitWithdraw() {
+            if (!requireAuth('ငွေထုတ်ယူရန်')) return;
+
             var method = document.getElementById('payout-method').value;
             var acc = document.getElementById('payout-acc').value.trim();
             var amt = parseInt(document.getElementById('payout-amt').value, 10);
@@ -872,7 +904,9 @@
         }
 
         function spinWheel() {
+            if (!requireAuth('ကံစမ်းမဲဘီး လှည့်ရန်')) return;
             if (isSpinning) return;
+
             var spinBtn = document.getElementById('btn-spin');
             isSpinning = true;
             if (spinBtn) { 
@@ -939,6 +973,7 @@
 
         // --- ADMIN PANEL FUNCTIONS ---
         function openAdminAuth() {
+            if (!requireAuth('Admin Panel ဖွင့်ရန်')) return;
             if (!window.checkIsAdmin || !window.checkIsAdmin()) {
                 showToast('ဤနေရာသည် Admin သီးသန့်ဖြစ်ပါသည်။ သင့် Google အကောင့်တွင် Admin ခွင့်ပြုချက်မရှိပါ! ❌');
                 return;
@@ -1067,6 +1102,11 @@
 
         window.addEventListener('load', function() {
             drawWheel();
+            renderTasksUI();
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
         });
     </script>
 
@@ -1094,21 +1134,27 @@
         const provider = new GoogleAuthProvider();
 
         const ADMIN_EMAIL = "aunghtet6580@gmail.com";
-        var currentAuthUser = null;
+        window.currentAuthUser = null;
 
-        // URL ထဲတွင် ဖိတ်ခေါ်သူ၏ Referrer ID ပါ/မပါ စစ်ဆေးမှတ်သားခြင်း (?ref=UID)
-        const urlParams = new URLSearchParams(window.location.search);
-        const refParam = urlParams.get('ref');
+        // URL သို့မဟုတ် Telegram WebApp မှ Referral ID စစ်ဆေးခြင်း
+        let refParam = null;
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.start_param) {
+            refParam = window.Telegram.WebApp.initDataUnsafe.start_param;
+        } else {
+            const urlParams = new URLSearchParams(window.location.search);
+            refParam = urlParams.get('ref') || urlParams.get('startapp') || urlParams.get('start');
+        }
         if (refParam) {
             sessionStorage.setItem('we_referrer_id', refParam);
         }
 
         window.checkIsAdmin = function() {
-            return currentAuthUser && currentAuthUser.email && (currentAuthUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+            return window.currentAuthUser && window.currentAuthUser.email && (window.currentAuthUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
         };
 
         window.triggerGoogleSignIn = function() {
             signInWithPopup(auth, provider).then((result) => {
+                document.getElementById('login-overlay').style.display = 'none';
                 showToast("Google အကောင့်ဖြင့် ဝင်ရောက်ပြီးပါပြီ! 🎉");
             }).catch((error) => {
                 console.error("Google Auth error:", error);
@@ -1124,26 +1170,35 @@
             }
         };
 
+        // Firebase Auth အခြေအနေ စောင့်ကြည့်ခြင်း
         onAuthStateChanged(auth, async (user) => {
             const overlay = document.getElementById('login-overlay');
             const avatar = document.getElementById('user-avatar');
             const nameElem = document.getElementById('user-display-name');
             const emailElem = document.getElementById('user-email-text');
+            const authBtn = document.getElementById('auth-action-btn');
 
             if (user) {
-                currentAuthUser = user;
+                window.currentAuthUser = user;
                 window.myUserId = user.uid;
                 window.myUserName = user.displayName || "Google User";
                 window.myUserEmail = user.email;
 
-                // Website URL Invite Link ထုတ်ပေးခြင်း
+                // WebApp Link ထုတ်ပေးခြင်း
+                var uidShort = user.uid.substring(0, 8);
                 var baseUrl = window.location.origin + window.location.pathname;
-                window.myInviteLink = baseUrl + "?ref=" + user.uid.substring(0, 8);
+                window.myInviteLink = baseUrl + "?ref=" + uidShort;
 
+                // UI ကို Logged In အဖြစ် အပ်ဒိတ်လုပ်ခြင်း
                 overlay.style.display = 'none';
                 avatar.src = user.photoURL || "https://via.placeholder.com/28";
                 nameElem.innerText = user.displayName || "User";
                 emailElem.innerText = user.email;
+
+                // ခလုတ်ကို Logout အဖြစ် ပြောင်းလဲခြင်း
+                authBtn.innerText = "Logout";
+                authBtn.style.background = "#232b3e";
+                authBtn.style.color = "#cbd5e1";
 
                 if (window.checkIsAdmin()) {
                     showToast("Admin အကောင့်ဖြင့် ဝင်ရောက်ထားပါသည် 👑");
@@ -1151,13 +1206,30 @@
 
                 await loadUserData(user.uid);
                 listenToMyWithdrawals(user.uid);
-                window.fetchLiveLeaderboard();
             } else {
-                currentAuthUser = null;
-                overlay.style.display = 'flex';
-                nameElem.innerText = "အကောင့်ဝင်မထားပါ";
-                emailElem.innerText = "Please Sign In";
+                window.currentAuthUser = null;
+                window.myUserId = '';
+                window.myUserName = 'ဧည့်သည် (Guest)';
+                window.myUserEmail = '';
+
+                // အကောင့်မဝင်ထားပါက ဧည့်သည်အဖြစ် ပြသခြင်း
+                avatar.src = "https://via.placeholder.com/28";
+                nameElem.innerText = "ဧည့်သည် (Guest)";
+                emailElem.innerText = "အကောင့်ဝင်မထားပါ";
+
+                // ခလုတ်ကို Sign in with Google အဖြစ် ပြသခြင်း
+                authBtn.innerText = "Sign in with Google";
+                authBtn.style.background = "#1c85ff";
+                authBtn.style.color = "#fff";
+
+                window.coins = 0;
+                window.points = 0;
+                window.friends = 0;
+                syncBal();
             }
+
+            // Leaderboard ကို Login မဝင်ထားသော်လည်း အားလုံး မြင်တွေ့နိုင်သည်
+            window.fetchLiveLeaderboard();
         });
 
         async function loadUserData(uid) {
@@ -1170,12 +1242,11 @@
                     window.points = (typeof data.points === 'number') ? data.points : 0;
                     window.friends = (typeof data.friends === 'number') ? data.friends : 0;
                 } else {
-                    // အကောင့်အသစ် ဝင်လာသူဖြစ်ပါက Referrer ရှိမရှိ စစ်ဆေးခြင်း
                     const referrerId = sessionStorage.getItem('we_referrer_id');
                     await setDoc(userRef, {
                         uid: uid,
-                        email: currentAuthUser.email,
-                        name: currentAuthUser.displayName || "User",
+                        email: window.currentAuthUser.email,
+                        name: window.currentAuthUser.displayName || "User",
                         coins: 572,
                         points: 0,
                         friends: 0,
@@ -1183,7 +1254,6 @@
                         createdAt: new Date().toISOString()
                     });
 
-                    // Referral ပေးသူထံသို့ အပိုဆု ကွိုင် ပေါင်းထည့်ပေးခြင်း
                     if (referrerId) {
                         giveReferralRewardToInviter(referrerId);
                     }
@@ -1201,7 +1271,6 @@
             }
         }
 
-        // ဖိတ်ခေါ်သူထံ Referral ဆုပေးခြင်း
         async function giveReferralRewardToInviter(shortRefId) {
             try {
                 const q = query(collection(db, "users"));
@@ -1220,9 +1289,9 @@
         }
 
         window.syncUserDataToFirebase = async function() {
-            if (!currentAuthUser) return;
+            if (!window.currentAuthUser) return;
             try {
-                const userRef = doc(db, "users", currentAuthUser.uid);
+                const userRef = doc(db, "users", window.currentAuthUser.uid);
                 await setDoc(userRef, {
                     coins: window.coins,
                     points: window.points,
@@ -1236,10 +1305,10 @@
         };
 
         window.submitWithdrawToFirebase = async function(withdrawData) {
-            if (!currentAuthUser) return;
+            if (!window.currentAuthUser) return;
             try {
-                withdrawData.userEmail = currentAuthUser.email;
-                withdrawData.userId = currentAuthUser.uid;
+                withdrawData.userEmail = window.currentAuthUser.email;
+                withdrawData.userId = window.currentAuthUser.uid;
                 withdrawData.createdAt = new Date().toISOString();
                 const wdRef = doc(db, "withdrawals", withdrawData.id);
                 await setDoc(wdRef, withdrawData);
@@ -1309,8 +1378,8 @@
                       '<div style="font-size:11px;color:#8da2c4;margin-bottom:8px;">' + escapeHtml(item.userEmail || '') + ' | ' + escapeHtml(item.date || '') + ' | <b style="color:' + statusColor + ';">' + escapeHtml(item.status) + '</b></div>' +
                       '<div style="display:flex;gap:6px;">' +
                         '<button onclick="window.adminUpdateWithdrawStatusInFirestore(\'' + item.id + '\', \'အောင်မြင်\')" style="flex:1;background:#10b981;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Approve</button>' +
-                        '<button onclick="window.adminUpdateWithdrawStatusInFirestore(\'' + item.id + '\', \'ငြင်းပယ်\')" style="flex:1;background:#ef4444;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Reject</button>' +
-                      '</div>' +
+                        '<button onclick="window.adminUpdateWithdrawStatusInFirestore(\'' + item.id + '\', \'ငြင်းပယ်\')" style="flex:1;background:#ef4444;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Reject</button>
+                      </div>' +
                     '</div>';
             });
         }
@@ -1331,7 +1400,7 @@
                 leaders.forEach(function(u, idx) {
                     var rank = idx + 1;
                     var medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
-                    var isMe = currentAuthUser && u.uid === currentAuthUser.uid;
+                    var isMe = window.currentAuthUser && u.uid === window.currentAuthUser.uid;
                     var bg = isMe ? 'background:#1a2b55;border:1px solid #2990ff;' : 'background:#0b142d;';
 
                     h += '<div style="' + bg + 'padding:10px 14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;">' +
