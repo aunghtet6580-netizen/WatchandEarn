@@ -49,7 +49,7 @@
         .adm-tab-btn { background: #0b142d; border: 1px solid #1c2b55; color: #8da2c4; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .adm-tab-btn.active { background: #1c85ff; color: #fff; border-color: #1c85ff; }
 
-        /* Login Overlay (Popup Modal) */
+        /* Login Overlay (သတ်မှတ်ထားချိန်မှသာ ပေါ်လာမည့် Popup) */
         #login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 14, 34, 0.88); z-index: 99999999; display: none; align-items: center; justify-content: center; padding: 20px; }
         .login-card { position: relative; background: #121c38; border: 1px solid #1c85ff; border-radius: 20px; padding: 30px 24px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .btn-google { background: #fff; color: #000; border: none; border-radius: 12px; padding: 14px 20px; width: 100%; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -59,8 +59,8 @@
 <body>
     <div id="toast"></div>
 
-    <!-- GOOGLE LOGIN MODAL (လိုအပ်မှသာ ပေါ်လာမည့် Popup) -->
-    <div id="login-overlay">
+    <!-- GOOGLE LOGIN POPUP MODAL (အလိုအလျောက် မပေါ်စေဘဲ display:none ပြုလုပ်ထားသည်) -->
+    <div id="login-overlay" style="display: none !important;">
         <div class="login-card">
             <button onclick="document.getElementById('login-overlay').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#8da2c4;font-size:22px;cursor:pointer;">✕</button>
             <div style="font-size: 40px; margin-bottom: 12px;">🪙</div>
@@ -83,7 +83,7 @@
             <button onclick="openAdminAuth()" title="Admin Panel">⋮</button>
         </div>
 
-        <!-- Google User Profile Bar (အကောင့်မဝင်ထားပါက Sign in with Google ပြသမည်) -->
+        <!-- Google User Profile Bar -->
         <div id="user-bar" style="background:#0b142d;padding:8px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);">
             <div style="display:flex;align-items:center;gap:10px;">
                 <img id="user-avatar" src="https://via.placeholder.com/28" style="width:28px;height:28px;border-radius:50%;border:1px solid #1c85ff;">
@@ -376,18 +376,18 @@
         var myUserEmail = '';
         var myInviteLink = window.location.origin + window.location.pathname;
 
-        // Login ဝင်ထားခြင်းရှိမရှိ စစ်ဆေးပြီး မဝင်ရသေးပါက Login တောင်းဆိုမည့် Helper Function
         function requireAuth(actionName) {
             if (!window.currentAuthUser) {
                 var overlay = document.getElementById('login-overlay');
-                if (overlay) overlay.style.display = 'flex';
+                if (overlay) {
+                    overlay.style.setProperty('display', 'flex', 'important');
+                }
                 showToast((actionName || 'ဤလုပ်ဆောင်ချက်') + ' ပြုလုပ်ရန် Google အကောင့် Sign in ဝင်ပေးပါ');
                 return false;
             }
             return true;
         }
 
-        // Header ဘားရှိ Sign in / Logout ခလုတ်ကို နှိပ်သည့်အခါ
         function handleAuthButtonClick() {
             if (window.currentAuthUser) {
                 window.triggerGoogleSignOut();
@@ -1136,7 +1136,7 @@
         const ADMIN_EMAIL = "aunghtet6580@gmail.com";
         window.currentAuthUser = null;
 
-        // URL သို့မဟုတ် Telegram WebApp မှ Referral ID စစ်ဆေးခြင်း
+        // Referral Parameter ဖတ်ယူခြင်း
         let refParam = null;
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.start_param) {
             refParam = window.Telegram.WebApp.initDataUnsafe.start_param;
@@ -1154,7 +1154,8 @@
 
         window.triggerGoogleSignIn = function() {
             signInWithPopup(auth, provider).then((result) => {
-                document.getElementById('login-overlay').style.display = 'none';
+                var overlay = document.getElementById('login-overlay');
+                if (overlay) overlay.style.setProperty('display', 'none', 'important');
                 showToast("Google အကောင့်ဖြင့် ဝင်ရောက်ပြီးပါပြီ! 🎉");
             }).catch((error) => {
                 console.error("Google Auth error:", error);
@@ -1170,9 +1171,13 @@
             }
         };
 
-        // Firebase Auth အခြေအနေ စောင့်ကြည့်ခြင်း
+        // အရေးကြီး: စာမျက်နှာ ဖွင့်ချိန်တွင် Login Overlay Box ကို လုံးဝ ပေါ်မလာစေရန် အသေအချာ ပိတ်ခြင်း
         onAuthStateChanged(auth, async (user) => {
             const overlay = document.getElementById('login-overlay');
+            if (overlay) {
+                overlay.style.setProperty('display', 'none', 'important');
+            }
+
             const avatar = document.getElementById('user-avatar');
             const nameElem = document.getElementById('user-display-name');
             const emailElem = document.getElementById('user-email-text');
@@ -1184,18 +1189,14 @@
                 window.myUserName = user.displayName || "Google User";
                 window.myUserEmail = user.email;
 
-                // WebApp Link ထုတ်ပေးခြင်း
                 var uidShort = user.uid.substring(0, 8);
                 var baseUrl = window.location.origin + window.location.pathname;
                 window.myInviteLink = baseUrl + "?ref=" + uidShort;
 
-                // UI ကို Logged In အဖြစ် အပ်ဒိတ်လုပ်ခြင်း
-                overlay.style.display = 'none';
                 avatar.src = user.photoURL || "https://via.placeholder.com/28";
                 nameElem.innerText = user.displayName || "User";
                 emailElem.innerText = user.email;
 
-                // ခလုတ်ကို Logout အဖြစ် ပြောင်းလဲခြင်း
                 authBtn.innerText = "Logout";
                 authBtn.style.background = "#232b3e";
                 authBtn.style.color = "#cbd5e1";
@@ -1212,12 +1213,10 @@
                 window.myUserName = 'ဧည့်သည် (Guest)';
                 window.myUserEmail = '';
 
-                // အကောင့်မဝင်ထားပါက ဧည့်သည်အဖြစ် ပြသခြင်း
                 avatar.src = "https://via.placeholder.com/28";
                 nameElem.innerText = "ဧည့်သည် (Guest)";
                 emailElem.innerText = "အကောင့်ဝင်မထားပါ";
 
-                // ခလုတ်ကို Sign in with Google အဖြစ် ပြသခြင်း
                 authBtn.innerText = "Sign in with Google";
                 authBtn.style.background = "#1c85ff";
                 authBtn.style.color = "#fff";
@@ -1228,7 +1227,6 @@
                 syncBal();
             }
 
-            // Leaderboard ကို Login မဝင်ထားသော်လည်း အားလုံး မြင်တွေ့နိုင်သည်
             window.fetchLiveLeaderboard();
         });
 
