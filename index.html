@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="my">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Watch and Earn</title>
-    <!-- Telegram Mini App Script Support -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
@@ -57,10 +55,9 @@
 </head>
 
 <body>
-
     <div id="toast"></div>
 
-    <!-- GOOGLE LOGIN REQUIRED MODAL (အကောင့်မဝင်ရသေးပါက ပေါ်လာမည်) -->
+    <!-- GOOGLE LOGIN MODAL -->
     <div id="login-overlay">
         <div class="login-card">
             <div style="font-size: 40px; margin-bottom: 12px;">🪙</div>
@@ -68,7 +65,7 @@
             <p style="color: #8da2c4; font-size: 13px; margin-bottom: 24px; line-height: 1.5;">
                 Coin များနှင့် ဆုလာဘ်များကို လုံခြုံစွာ သိမ်းဆည်းနိုင်ရန် သင်၏ Google Account ဖြင့် Sign in ဝင်ရောက်ပေးပါ။
             </p>
-            <button class="btn-google" onclick="triggerGoogleSignIn()">
+            <button class="btn-google" onclick="window.triggerGoogleSignIn()">
                 <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/></svg>
                 Sign in with Google
             </button>
@@ -76,7 +73,7 @@
     </div>
 
     <div class="app">
-        <!-- Top Header with Google Profile Info -->
+        <!-- Top Header -->
         <div class="top">
             <button onclick="closeApp()" title="Close App">✕</button>
             <span>Watch and Earn</span>
@@ -92,27 +89,22 @@
                     <div id="user-email-text" style="font-size:10px;color:#8da2c4;">Checking auth...</div>
                 </div>
             </div>
-            <button onclick="triggerGoogleSignOut()" style="background:#232b3e;color:#cbd5e1;border:none;padding:5px 12px;border-radius:15px;font-size:11px;font-weight:600;cursor:pointer;">Logout</button>
+            <button onclick="window.triggerGoogleSignOut()" style="background:#232b3e;color:#cbd5e1;border:none;padding:5px 12px;border-radius:15px;font-size:11px;font-weight:600;cursor:pointer;">Logout</button>
         </div>
 
         <div class="content">
-
             <!-- 1. EARN SCREEN -->
             <div id="page-earn" class="page">
                 <h2 class="title" style="margin-bottom: 8px;">Coin များစုဆောင်းပါ</h2>
-
                 <div style="text-align:center;margin-bottom:18px;">
                     <div style="font-size:12px;color:#8da2c4;margin-bottom:2px;">လက်ရှိ Coins</div>
-                    <div style="font-size:30px;font-weight:800;color:#ffd700;">🪙 <span id="earn-bal" style="color:#fff;">572</span></div>
+                    <div style="font-size:30px;font-weight:800;color:#ffd700;">🪙 <span id="earn-bal" style="color:#fff;">0</span></div>
                 </div>
-
                 <div class="seg">
                     <button id="btn-tasks" class="active" onclick="toggleEarn('tasks')">Tasks</button>
                     <button id="btn-completed" onclick="toggleEarn('completed')">Completed</button>
                 </div>
-
                 <div id="list-completed" style="display:none;"></div>
-
                 <div id="list-tasks" style="display:block;">
                     <div style="margin-bottom: 18px;">
                         <div style="font-size:15px;font-weight:700;color:#ffd700;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
@@ -120,7 +112,6 @@
                         </div>
                         <div id="daily-tasks-list"></div>
                     </div>
-
                     <div>
                         <div style="font-size:15px;font-weight:700;color:#00d2ff;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
                             ⚡ Extra Tasks (အထူးတာဝန်များ)
@@ -152,63 +143,26 @@
                 </div>
             </div>
 
-            <!-- 3. PROFILE SCREEN (REFERRAL + မှတ်တမ်းများ) -->
+            <!-- 3. PROFILE SCREEN -->
             <div id="page-friends" class="page">
-                
-                <!-- Card 1: Your Invite Link -->
-                <div class="card" style="padding: 16px 18px; margin-bottom: 12px; background: #111625; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06);">
+                <div class="card" style="padding: 16px 18px; margin-bottom: 12px; background: #111625; border-radius: 18px;">
                     <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
                         <div style="width:48px;height:48px;border-radius:14px;background:#161e31;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#7dd3fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#7dd3fc" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                         </div>
                         <div style="min-width:0;">
                             <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:3px;">Your Invite Link</div>
-                            <div id="display-invite-link" style="font-size:12px;color:#8da2c4;word-break:break-all;line-height:1.3;">https://t.me/ATF_AIRDROP_bot?start=100000000</div>
+                            <div id="display-invite-link" style="font-size:12px;color:#8da2c4;word-break:break-all;">https://t.me/ATF_AIRDROP_bot</div>
                         </div>
                     </div>
-                    <button onclick="copyLink()" style="background:#ffd000;color:#000;font-weight:800;font-size:14px;padding:10px 22px;border-radius:30px;border:none;cursor:pointer;flex-shrink:0;margin-left:10px;">Copy</button>
+                    <button onclick="copyLink()" style="background:#ffd000;color:#000;font-weight:800;font-size:14px;padding:10px 22px;border-radius:30px;border:none;cursor:pointer;">Copy</button>
                 </div>
 
-                <!-- Card 2: Your Referrals -->
-                <div class="card" style="padding: 16px 18px; margin-bottom: 12px; background: #111625; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06);">
-                    <div style="display:flex;align-items:center;gap:14px;">
-                        <div style="width:48px;height:48px;border-radius:14px;background:#161e31;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="#38bdf8">
-                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:3px;">Your Referrals</div>
-                            <div style="font-size:13px;color:#8da2c4;"><span id="ref-succ">0</span> successful · <span id="ref-tot">0</span> total</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3: Referral Reward -->
-                <div class="card" style="padding: 16px 18px; margin-bottom: 22px; background: #111625; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06);">
-                    <div style="display:flex;align-items:center;gap:14px;">
-                        <div style="width:48px;height:48px;border-radius:14px;background:#161e31;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">🎁</div>
-                        <div>
-                            <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:3px;">Referral Reward</div>
-                            <div style="font-size:13px;color:#8da2c4;"><span id="ref-avail">0</span> available · +100 Coins each</div>
-                        </div>
-                    </div>
-                    <button id="btn-claim-ref" onclick="claimReferralReward()" style="background:#232b3e;color:#64748b;font-weight:700;font-size:14px;padding:10px 22px;border-radius:30px;border:none;cursor:default;flex-shrink:0;margin-left:10px;">Claim</button>
-                </div>
-
-                <!-- မှတ်တမ်း Tab ခလုတ်များ -->
                 <div class="seg" style="margin-bottom: 14px;">
                     <button id="btn-hist-payout" class="active" onclick="toggleHistory('payout')">💸 ငွေထုတ်မှတ်တမ်း</button>
                     <button id="btn-hist-reward" onclick="toggleHistory('reward')">🎁 ဆုရရှိမှုမှတ်တမ်း</button>
                 </div>
-
-                <!-- ငွေထုတ်မှတ်တမ်းစာရင်း -->
                 <div id="hist-payout-list"></div>
-
-                <!-- ဆုရရှိမှုမှတ်တမ်းစာရင်း -->
                 <div id="hist-reward-list" style="display:none;"></div>
             </div>
 
@@ -216,55 +170,37 @@
             <div id="page-home" class="page active">
                 <div style="text-align:center;padding-top:10px;">
                     <div style="color:#8da2c4;font-size:13px;font-weight:600;margin-bottom:10px;">⚡ Watch and Earn Arena</div>
-
                     <div style="margin-bottom:12px;">
                         <div style="font-size:12px;color:#8da2c4;margin-bottom:2px;">Points စုစုပေါင်း</div>
                         <div style="font-size:32px;font-weight:800;color:#ffd700;">⭐ <span id="home-points" style="color:#fff;">0</span></div>
                     </div>
 
-                    <div style="color:#ffd700;font-size:14px;margin-bottom:15px;">⭐ Member Dashboard</div>
-
-                    <!-- Lucky Spin Wheel (ပုံစံအတိုင်း မူလဒီဇိုင်း) -->
+                    <!-- Lucky Spin Wheel -->
                     <div class="form-box" style="margin-top: 15px; text-align: center; align-items: center;">
                         <h3 style="font-size: 20px; color: #ffd700; margin-bottom: 2px;">🎯 Lucky Spin Wheel</h3>
                         <p style="color: #8da2c4; font-size: 13px; margin-bottom: 6px;">ကံစမ်းမဲဘီးကို လှည့်ပြီး Points များစုဆောင်းပါ</p>
-
                         <div class="wheel-container">
                             <div class="wheel-pointer"></div>
                             <canvas id="wheel-canvas" width="520" height="520"></canvas>
                             <div class="wheel-center">SPIN</div>
                         </div>
-
                         <button id="btn-spin" class="btn-submit" style="width: 100%; margin-top: 6px;" onclick="spinWheel()">လှည့်မည် (Spin Now)</button>
-                    </div>
-
-                    <!-- Point Winners Announcement Notice -->
-                    <div id="winner-announcement-box" style="display:none;margin-top:16px;background:linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(28,133,255,0.15) 100%);border:1px solid #ffd700;border-radius:18px;padding:16px;text-align:left;">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                            <span style="font-size:20px;">👑</span>
-                            <h4 id="winner-notice-title" style="color:#ffd700;font-size:15px;font-weight:800;">Points ကံထူးရှင် ဆုကြေညာချက်</h4>
-                        </div>
-                        <p id="winner-notice-desc" style="color:#cbd5e1;font-size:12px;margin-bottom:10px;line-height:1.4;"></p>
-                        <div id="winner-chips-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
                     </div>
 
                     <!-- Leaderboard -->
                     <div class="form-box" style="margin-top: 15px; text-align: left;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
-                            <h3 style="font-size: 18px; color: #ffd700; display:flex; align-items:center; gap:6px;">🏆 Point Leaderboard</h3>
-                            <span style="font-size: 12px; color: #8da2c4;">Points အများဆုံးသူများ</span>
+                            <h3 style="font-size: 18px; color: #ffd700;">🏆 Point Leaderboard</h3>
+                            <span style="font-size: 12px; color: #8da2c4;">Top Users</span>
                         </div>
-                        <p style="color:#8da2c4;font-size:11px;margin-bottom:8px;">* Point အများဆုံးရရှိသူများအား ဆုငွေကျပ် (၁)သောင်းမှစ၍ (၁)သိန်းကျပ်အထိ အပတ်စဉ်တနင်္လာနေ့တိုင်းတွင် ပေးအပ်သွားပါမည်။</p>
                         <div id="leaderboard-list" style="display:flex; flex-direction:column; gap:8px;"></div>
                     </div>
-
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- FIXED BOTTOM NAVIGATION BAR -->
+    <!-- BOTTOM NAVBAR -->
     <div class="nav-bar">
         <button class="nav-item active" id="btn-nav-home" onclick="goTab('home')">
             <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
@@ -284,100 +220,32 @@
         </button>
     </div>
 
-    <!-- ADMIN DASHBOARD MODAL -->
+    <!-- ADMIN MODAL -->
     <div id="admin-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:9999999;overflow-y:auto;padding:16px;">
-        <div style="max-width:440px;margin:20px auto;background:#121c38;border-radius:18px;border:1px solid #1c85ff;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.9);">
-          
+        <div style="max-width:440px;margin:20px auto;background:#121c38;border-radius:18px;border:1px solid #1c85ff;padding:18px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <h3 style="color:#ffd700;font-size:17px;">🔐 Admin Dashboard</h3>
             <button onclick="closeAdmin()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
           </div>
-
-          <!-- Admin Sub-navigation Tabs -->
-          <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;">
-              <button class="adm-tab-btn active" id="adm-tab-btn-tasks" onclick="switchAdminTab('tasks')">Tasks</button>
-              <button class="adm-tab-btn" id="adm-tab-btn-winners" onclick="switchAdminTab('winners')">🏆 ကံထူးရှင်ရွေးချယ်ရန်</button>
-              <button class="adm-tab-btn" id="adm-tab-btn-withdraws" onclick="switchAdminTab('withdraws')">💸 ငွေထုတ်များ</button>
+          <div style="display:flex;gap:6px;margin-bottom:14px;">
+              <button class="adm-tab-btn active" id="adm-tab-btn-withdraws" onclick="switchAdminTab('withdraws')">💸 ငွေထုတ်တောင်းဆိုမှုများ</button>
           </div>
-
-          <!-- TAB 1: TASKS စီမံခန့်ခွဲခြင်း -->
-          <div id="adm-sec-tasks">
-              <div style="background:#0b142d;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);margin-bottom:16px;">
-                <div style="font-weight:700;margin-bottom:10px;color:#60a5fa;font-size:14px;">➕ Task အသစ် ထည့်သွင်းရန်</div>
-                
-                <input type="text" id="adm-title" placeholder="Task ခေါင်းစဉ် (ဥပမာ- Watch YouTube Video)" style="width:100%;margin-bottom:10px;padding:12px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:13px;outline:none;">
-                
-                <div style="display:flex;gap:8px;margin-bottom:10px;">
-                  <select id="adm-cat" style="flex:1;padding:12px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:13px;outline:none;">
-                    <option value="daily">📅 Daily Task</option>
-                    <option value="extra">⚡ Extra Task</option>
-                  </select>
-
-                  <select id="adm-plat" style="flex:1;padding:12px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:13px;outline:none;">
-                    <option value="yt">YouTube 🔴</option>
-                    <option value="fb">Facebook 🔵</option>
-                    <option value="tg">Telegram ✈️</option>
-                    <option value="tt">TikTok 🎵</option>
-                    <option value="web">Website 🌐</option>
-                  </select>
-                </div>
-
-                <input type="url" id="adm-link" placeholder="လင့်ခ် URL (ဥပမာ- https://youtube.com/...)" style="width:100%;margin-bottom:10px;padding:12px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:13px;outline:none;">
-                <input type="number" id="adm-reward" placeholder="ရရှိမည့် Coin ပမာဏ (ဥပမာ- 100)" style="width:100%;margin-bottom:14px;padding:12px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:13px;outline:none;">
-
-                <button onclick="adminAddTask()" style="width:100%;background:#1c85ff;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;">+ Task အသစ် ထည့်မည်</button>
-              </div>
-
-              <div>
-                <div style="font-weight:700;margin-bottom:10px;color:#8da2c4;font-size:14px;">📋 လက်ရှိ Task များ စာရင်း</div>
-                <div id="adm-task-list" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;"></div>
-              </div>
-          </div>
-
-          <!-- TAB 2: POINT ကံထူးရှင် ရွေးချယ်ခြင်း -->
-          <div id="adm-sec-winners" style="display:none;">
-              <div style="background:#0b142d;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);margin-bottom:14px;">
-                  <div style="font-weight:700;margin-bottom:8px;color:#ffd700;font-size:14px;">🏆 Points ကံထူးရှင် ဆုရွေးချယ်ခြင်း</div>
-                  <p style="font-size:12px;color:#8da2c4;margin-bottom:12px;line-height:1.4;">Leaderboard ထိပ်တန်း Points အများဆုံး User များထဲမှ ကံထူးရှင် ဦးရေကို သတ်မှတ်၍ ဆုကြေညာချက် ထုတ်ပြန်နိုင်ပါသည်။</p>
-
-                  <label style="font-size:12px;color:#8da2c4;display:block;margin-bottom:4px;">ရွေးချယ်မည့် ထိပ်တန်း ဦးရေ:</label>
-                  <input type="number" id="adm-win-count" value="3" min="1" max="20" style="width:100%;margin-bottom:10px;padding:10px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:14px;outline:none;">
-
-                  <label style="font-size:12px;color:#8da2c4;display:block;margin-bottom:4px;">ဆုကြေညာချက် ခေါင်းစဉ်:</label>
-                  <input type="text" id="adm-win-title" value="ယခုအပတ် Points ထိပ်တန်း ကံထူးရှင်များ ဆုပေးပွဲ" style="width:100%;margin-bottom:10px;padding:10px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:13px;outline:none;">
-
-                  <label style="font-size:12px;color:#8da2c4;display:block;margin-bottom:4px;">ဆုလက်ဆောင် အသေးစိတ်:</label>
-                  <textarea id="adm-win-desc" rows="2" style="width:100%;margin-bottom:12px;padding:10px;background:#121c38;border:1px solid #1c2b55;border-radius:10px;color:#fff;font-size:13px;outline:none;resize:none;">၁ မှ ၃ အထိ အထူးငွေသားဆုများ ချီးမြှင့်ပါမည်။ ကျေးဇူးပြု၍ Admin ထံ ဆက်သွယ်ပါ။</textarea>
-
-                  <button onclick="adminSelectWinners()" style="width:100%;background:#ffd700;color:#000;border:none;padding:12px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;">👑 ကံထူးရှင်များ ရွေးချယ်ပြီး ကြေညာမည်</button>
-                  <button onclick="adminClearWinners()" style="width:100%;background:none;border:1px solid #ef4444;color:#ef4444;padding:8px;border-radius:10px;font-weight:600;font-size:12px;cursor:pointer;margin-top:8px;">ကြေညာချက်ကို ဖယ်ရှားမည်</button>
-                  <button onclick="adminResetAllPoints()" style="width:100%;background:none;border:1px solid #f59e0b;color:#f59e0b;padding:8px;border-radius:10px;font-weight:600;font-size:12px;cursor:pointer;margin-top:8px;">🔄 User အားလုံး၏ Points များကို 0 သို့ Reset ပြုလုပ်မည်</button>
-              </div>
-
-              <div>
-                  <div style="font-weight:700;margin-bottom:8px;color:#8da2c4;font-size:13px;">လက်ရှိ Points စာရင်းအကျဉ်း:</div>
-                  <div id="adm-leaderboard-preview" style="font-size:12px;color:#cbd5e1;max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
-              </div>
-          </div>
-
-          <!-- TAB 3: ငွေထုတ်ယူမှု စီမံခန့်ခွဲခြင်း -->
-          <div id="adm-sec-withdraws" style="display:none;">
-              <div style="font-weight:700;margin-bottom:10px;color:#ffd700;font-size:14px;">💸 ငွေထုတ်တောင်းဆိုမှုများ စီမံရန်</div>
+          <div id="adm-sec-withdraws">
               <div id="adm-withdraw-list" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;"></div>
           </div>
-
         </div>
     </div>
 
-    <!-- MAIN JAVASCRIPT LOGIC -->
     <script>
-        var coins = 572;
+        var coins = 0;
         var points = 0;
         var friends = 0;
         var myUserId = '';
-        var myUserName = 'သင် (You)';
+        var myUserName = 'User';
         var myUserEmail = '';
         var myInviteLink = 'https://t.me/ATF_AIRDROP_bot';
+        var withdrawHistory = [];
+        var rewardHistory = JSON.parse(localStorage.getItem('we_reward_hist')) || [];
 
         function showToast(txt) {
             var t = document.getElementById('toast');
@@ -385,128 +253,36 @@
             t.innerText = '⚡ ' + txt;
             t.style.display = 'block';
             clearTimeout(window.toastTimer);
-            window.toastTimer = setTimeout(function() {
-                t.style.display = 'none';
-            }, 2500);
+            window.toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2500);
         }
 
         function closeApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.close();
-            } else {
-                showToast('App ပိတ်ရန် Browser Tab ကို ပိတ်ပါ');
-            }
+            if (window.Telegram && window.Telegram.WebApp) window.Telegram.WebApp.close();
+            else showToast('Browser Tab ကို ပိတ်ပါ');
         }
 
-        function syncBal(){
+        function syncBal() {
             var e = document.getElementById('earn-bal');
             var p = document.getElementById('payout-bal');
             var hp = document.getElementById('home-points');
-
             if(e) e.innerText = coins.toLocaleString();
             if(hp) hp.innerText = points.toLocaleString();
             if(p) p.innerText = coins.toLocaleString() + ' Coins';
-
-            renderLeaderboard();
-
-            if (window.syncUserDataToFirebase) {
-                window.syncUserDataToFirebase();
-            }
+            if (window.syncUserDataToFirebase) window.syncUserDataToFirebase();
         }
 
         function goTab(name) {
-            ['home', 'earn', 'payout', 'friends'].forEach(function(t) {
-                var p = document.getElementById('page-' + t),
-                    b = document.getElementById('btn-nav-' + t);
+            ['home', 'earn', 'payout', 'friends'].forEach(t => {
+                var p = document.getElementById('page-' + t), b = document.getElementById('btn-nav-' + t);
                 if (p) p.classList.remove('active');
                 if (b) b.classList.remove('active');
             });
-            var ap = document.getElementById('page-' + name),
-                ab = document.getElementById('btn-nav-' + name);
+            var ap = document.getElementById('page-' + name), ab = document.getElementById('btn-nav-' + name);
             if (ap) ap.classList.add('active');
             if (ab) ab.classList.add('active');
             window.scrollTo(0, 0);
-
             if (name === 'friends') renderHistory();
             if (name === 'earn') renderTasksUI();
-            if (name === 'home') {
-                renderLeaderboard();
-                renderWinnerAnnouncement();
-            }
-        }
-
-        function toggleEarn(mode) {
-            var b1 = document.getElementById('btn-tasks'),
-                b2 = document.getElementById('btn-completed');
-            var l1 = document.getElementById('list-tasks'),
-                l2 = document.getElementById('list-completed');
-            if (mode === 'tasks') {
-                b1.classList.add('active');
-                b2.classList.remove('active');
-                l1.style.display = 'block';
-                l2.style.display = 'none';
-            } else {
-                b2.classList.add('active');
-                b1.classList.remove('active');
-                l2.style.display = 'block';
-                l1.style.display = 'none';
-            }
-        }
-
-        var defaultTasks = [
-          { id: 't_1', cat: 'daily', plat: 'yt', title: 'YouTube Video Like & Watch', link: 'https://youtube.com', reward: 100 },
-          { id: 't_2', cat: 'daily', plat: 'fb', title: 'Facebook Page Follow & Like', link: 'https://facebook.com', reward: 80 },
-          { id: 't_3', cat: 'extra', plat: 'tg', title: 'Telegram Channel သို့ Join ရန်', link: 'https://t.me', reward: 150 },
-          { id: 't_4', cat: 'extra', plat: 'web', title: 'Website သို့ ဝင်ရောက်ကြည့်ရှုရန်', link: 'https://google.com', reward: 50 }
-        ];
-
-        var appTasks = JSON.parse(localStorage.getItem('we_app_tasks')) || defaultTasks;
-        var completedTaskIds = JSON.parse(localStorage.getItem('we_completed_ids')) || [];
-
-        function saveTasks(){
-            localStorage.setItem('we_app_tasks', JSON.stringify(appTasks));
-            localStorage.setItem('we_completed_ids', JSON.stringify(completedTaskIds));
-        }
-
-        function detectPlatform(link, manualPlat, title) {
-            var l = (link || '').toLowerCase();
-            var t = (title || '').toLowerCase();
-            if (l.includes('t.me') || l.includes('telegram') || t.includes('telegram')) return 'tg';
-            if (l.includes('youtube.com') || l.includes('youtu.be') || t.includes('youtube')) return 'yt';
-            if (l.includes('facebook.com') || l.includes('fb.watch') || l.includes('fb.me') || l.includes('fb.com') || t.includes('facebook')) return 'fb';
-            if (l.includes('tiktok.com') || t.includes('tiktok')) return 'tt';
-            return manualPlat || 'web';
-        }
-
-        function getPlatformIcon(plat){
-            if(plat === 'tg') {
-                return { 
-                    icon: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="m20.665 3.717-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l-.313 4.674c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.415z"/></svg>', 
-                    bg: '#229ed9'
-                };
-            }
-            if(plat === 'yt') {
-                return { 
-                    icon: '<svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>', 
-                    bg: '#e50914'
-                };
-            }
-            if(plat === 'fb') {
-                return { 
-                    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.374 14.5 5 15.5 5H18V0h-3.808C10.597 0 9 1.583 9 4.615V8z"/></svg>', 
-                    bg: '#1877f2'
-                };
-            }
-            if(plat === 'tt') {
-                return { 
-                    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.48 6.3 6.3 0 0 0 1.86-4.48V8.71a8.18 8.18 0 0 0 4.91 1.63v-3.65z"/></svg>', 
-                    bg: '#000000'
-                };
-            }
-            return { 
-                icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>', 
-                bg: '#10b981'
-            };
         }
 
         function escapeHtml(str) {
@@ -514,275 +290,14 @@
             return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        function renderTasksUI(){
-            var dailyList = document.getElementById('daily-tasks-list');
-            var extraList = document.getElementById('extra-tasks-list');
-            var compList = document.getElementById('list-completed');
-            if(!dailyList || !extraList || !compList) return;
-
-            dailyList.innerHTML = ''; extraList.innerHTML = ''; compList.innerHTML = '';
-            var dailyCount = 0, extraCount = 0, compCount = 0;
-
-            appTasks.forEach(function(t){
-                var plat = detectPlatform(t.link, t.plat, t.title);
-                var p = getPlatformIcon(plat);
-                var isDone = completedTaskIds.indexOf(t.id) !== -1;
-                var safeTitle = escapeHtml(t.title);
-
-                if(isDone){
-                    compCount++;
-                    compList.innerHTML += 
-                        '<div class="card">' +
-                          '<div class="card-l">' +
-                            '<div class="icon" style="background:' + p.bg + ';">' + p.icon + '</div>' +
-                            '<div>' +
-                              '<div style="font-weight:700;font-size:15px;">' + safeTitle + '</div>' +
-                              '<div class="c-gold">🪙 +' + t.reward + ' Coins</div>' +
-                            '</div>' +
-                          '</div>' +
-                          '<span class="c-green">✓ Completed</span>' +
-                        '</div>';
-                } else {
-                    var cardHtml = 
-                        '<div class="card" id="task-box-' + t.id + '">' +
-                          '<div class="card-l">' +
-                            '<div class="icon" style="background:' + p.bg + ';">' + p.icon + '</div>' +
-                            '<div>' +
-                              '<div style="font-weight:700;font-size:14px;">' + safeTitle + '</div>' +
-                              '<div class="c-gold">🪙 +' + t.reward + ' Coins</div>' +
-                            '</div>' +
-                          '</div>' +
-                          '<button class="btn-act" id="btn-t-' + t.id + '" data-id="' + t.id + '" data-link="' + encodeURI(t.link) + '" data-reward="' + t.reward + '" onclick="handleTaskClick(this)">Go / သွားမည်</button>' +
-                        '</div>';
-
-                    if(t.cat === 'daily'){
-                        dailyList.innerHTML += cardHtml;
-                        dailyCount++;
-                    } else {
-                        extraList.innerHTML += cardHtml;
-                        extraCount++;
-                    }
-                }
-            });
-
-            if(dailyCount === 0) dailyList.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:10px;">Daily Task အသစ်မရှိသေးပါ</div>';
-            if(extraCount === 0) extraList.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:10px;">Extra Task အသစ်မရှိသေးပါ</div>';
-            if(compCount === 0) compList.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:15px;">ပြီးမြောက်ထားသော Task မရှိသေးပါ</div>';
-        }
-
-        function handleTaskClick(btn) {
-            var id = btn.getAttribute('data-id');
-            var link = decodeURI(btn.getAttribute('data-link'));
-            var reward = parseInt(btn.getAttribute('data-reward'), 10) || 0;
-
-            window.open(link, '_blank');
-            showToast('လင့်ခ်သို့ သွားရောက်ပြီးပါက ၅ စက္ကန့် စောင့်ဆိုင်းပါ...');
-
-            btn.disabled = true;
-            var countdown = 5;
-            btn.innerText = 'ခဏစောင့်ပါ (' + countdown + 's)...';
-            btn.style.background = '#64748b';
-
-            var cdInterval = setInterval(function() {
-                countdown--;
-                if(countdown > 0) {
-                    btn.innerText = 'ခဏစောင့်ပါ (' + countdown + 's)...';
-                } else {
-                    clearInterval(cdInterval);
-                    btn.disabled = false;
-                    btn.innerText = 'Claim / ရယူမည်';
-                    btn.style.background = '#10b981';
-                    btn.onclick = function() {
-                        finishTask(id, reward);
-                    };
-                }
-            }, 1000);
-        }
-
-        function finishTask(id, reward){
-            if(completedTaskIds.indexOf(id) !== -1) {
-                showToast('ဤ Task ကို ရယူပြီးဖြစ်ပါသည်!');
-                return;
-            }
-
-            coins += reward;
-            completedTaskIds.push(id);
-            saveTasks();
-            syncBal();
-            
-            rewardHistory.unshift({
-                title: 'Task ပြီးမြောက်မှုဆု',
-                amt: '+' + reward + ' Coins',
-                date: new Date().toLocaleDateString('my-MM') + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-            });
-            saveHistory();
-
-            showToast('+' + reward + ' Coins ရရှိပါပြီ! 🎉');
-            renderTasksUI();
-            renderHistory();
-        }
-
-        var withdrawHistory = JSON.parse(localStorage.getItem('we_withdraw_hist')) || [];
-        var rewardHistory = JSON.parse(localStorage.getItem('we_reward_hist')) || [];
-        var refAvailable = parseInt(localStorage.getItem('we_ref_avail'), 10) || 0;
-
-        function saveHistory(){
-            localStorage.setItem('we_withdraw_hist', JSON.stringify(withdrawHistory));
-            localStorage.setItem('we_reward_hist', JSON.stringify(rewardHistory));
-            localStorage.setItem('we_ref_avail', refAvailable);
-        }
-
-        function toggleHistory(type){
-            var bp = document.getElementById('btn-hist-payout');
-            var br = document.getElementById('btn-hist-reward');
-            var lp = document.getElementById('hist-payout-list');
-            var lr = document.getElementById('hist-reward-list');
-            if(type === 'payout'){
-                bp.classList.add('active'); br.classList.remove('active');
-                lp.style.display = 'block'; lr.style.display = 'none';
-            } else {
-                br.classList.add('active'); bp.classList.remove('active');
-                lr.style.display = 'block'; lp.style.display = 'none';
-            }
-        }
-
-        function renderHistory(){
-            var lp = document.getElementById('hist-payout-list');
-            var lr = document.getElementById('hist-reward-list');
-            var rSucc = document.getElementById('ref-succ');
-            var rTot = document.getElementById('ref-tot');
-            var rAvail = document.getElementById('ref-avail');
-            var btnClaim = document.getElementById('btn-claim-ref');
-            var linkBox = document.getElementById('display-invite-link');
-
-            if(linkBox) linkBox.innerText = myInviteLink;
-            if(rSucc) rSucc.innerText = friends;
-            if(rTot) rTot.innerText = friends;
-            if(rAvail) rAvail.innerText = refAvailable;
-
-            if(btnClaim){
-                if(refAvailable > 0){
-                    btnClaim.style.background = '#ffd000';
-                    btnClaim.style.color = '#000';
-                    btnClaim.style.cursor = 'pointer';
-                } else {
-                    btnClaim.style.background = '#232b3e';
-                    btnClaim.style.color = '#64748b';
-                    btnClaim.style.cursor = 'default';
-                }
-            }
-
-            if(lp){
-                if(withdrawHistory.length === 0){
-                    lp.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:16px;">ငွေထုတ်ယူထားသော မှတ်တမ်း မရှိသေးပါ</div>';
-                } else {
-                    var hHtml = '';
-                    withdrawHistory.forEach(function(item){
-                        var stColor = '#f59e0b';
-                        var stBg = 'rgba(245,158,11,0.2)';
-                        if(item.status === 'Approved' || item.status === 'အောင်မြင်') {
-                            stColor = '#10b981'; stBg = 'rgba(16,185,129,0.2)';
-                        } else if(item.status === 'Rejected' || item.status === 'ငြင်းပယ်') {
-                            stColor = '#ef4444'; stBg = 'rgba(239,68,68,0.2)';
-                        }
-
-                        hHtml += '<div class="card" style="padding:12px 14px;margin-bottom:10px;">' +
-                          '<div style="display:flex;align-items:center;gap:12px;">' +
-                            '<div style="width:38px;height:38px;border-radius:10px;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:16px;">💳</div>' +
-                            '<div>' +
-                              '<div style="font-weight:700;font-size:14px;color:#fff;">' + escapeHtml(item.method) + ' (' + escapeHtml(item.acc) + ')</div>' +
-                              '<div style="font-size:11px;color:#8da2c4;">' + escapeHtml(item.date) + '</div>' +
-                            '</div>' +
-                          '</div>' +
-                          '<div style="text-align:right;">' +
-                            '<div style="font-weight:700;font-size:14px;color:#ef4444;">-' + Number(item.amt).toLocaleString() + ' Coins</div>' +
-                            '<span style="font-size:10px;padding:2px 8px;border-radius:6px;background:' + stBg + ';color:' + stColor + ';font-weight:600;">' + escapeHtml(item.status) + '</span>' +
-                          '</div>' +
-                        '</div>';
-                    });
-                    lp.innerHTML = hHtml;
-                }
-            }
-
-            if(lr){
-                var filteredRewardHistory = rewardHistory.filter(function(item){
-                    return item.title.indexOf('Lucky Spin Wheel') === -1;
-                });
-
-                if(filteredRewardHistory.length === 0){
-                    lr.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:16px;">ဆုလက်ဆောင်ရရှိထားသော မှတ်တမ်း မရှိသေးပါ</div>';
-                } else {
-                    var rHtml = '';
-                    filteredRewardHistory.forEach(function(item){
-                        rHtml += '<div class="card" style="padding:12px 14px;margin-bottom:10px;">' +
-                          '<div style="display:flex;align-items:center;gap:12px;">' +
-                            '<div style="width:38px;height:38px;border-radius:10px;background:#1c85ff;display:flex;align-items:center;justify-content:center;font-size:16px;">🎁</div>' +
-                            '<div>' +
-                              '<div style="font-weight:700;font-size:14px;color:#fff;">' + escapeHtml(item.title) + '</div>' +
-                              '<div style="font-size:11px;color:#8da2c4;">' + escapeHtml(item.date) + '</div>' +
-                            '</div>' +
-                          '</div>' +
-                          '<div style="text-align:right;">' +
-                            '<div style="font-weight:700;font-size:14px;color:#ffd700;">' + escapeHtml(item.amt) + '</div>' +
-                            '<span style="font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(16,185,129,0.2);color:#10b981;font-weight:600;">အောင်မြင်</span>' +
-                          '</div>' +
-                        '</div>';
-                    });
-                    lr.innerHTML = rHtml;
-                }
-            }
-        }
-
-        function copyLink() {
-            var link = myInviteLink;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(link).then(function() {
-                    showToast('Invite Link ကို Copy ကူးယူပြီးပါပြီ! 📋');
-                }).catch(function() {
-                    showToast('Link: ' + link);
-                });
-            } else {
-                showToast('Link: ' + link);
-            }
-        }
-
-        function claimReferralReward() {
-            if (refAvailable <= 0) {
-                showToast('ထုတ်ယူရန် Referral ဆု မရှိသေးပါ!');
-                return;
-            }
-            var claimCoins = refAvailable * 100;
-            coins += claimCoins;
-            refAvailable = 0;
-            saveHistory();
-            syncBal();
-            rewardHistory.unshift({
-                title: 'Referral Invite ဆုလက်ဆောင်',
-                amt: '+' + claimCoins + ' Coins',
-                date: new Date().toLocaleDateString('my-MM') + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-            });
-            saveHistory();
-            showToast('+' + claimCoins + ' Coins Referral ဆု ထုတ်ယူပြီးပါပြီ! 🎉');
-            renderHistory();
-        }
-
         function submitWithdraw() {
             var method = document.getElementById('payout-method').value;
             var acc = document.getElementById('payout-acc').value.trim();
             var amt = parseInt(document.getElementById('payout-amt').value, 10);
 
-            if (!acc) {
-                showToast('ဖုန်းနံပါတ် သို့မဟုတ် အကောင့် ID ထည့်သွင်းပါ!');
-                return;
-            }
-            if (isNaN(amt) || amt < 5000) {
-                showToast('အနည်းဆုံး ၅,၀၀၀ Coins မှ စတင် ထုတ်ယူနိုင်ပါသည်!');
-                return;
-            }
-            if (amt > coins) {
-                showToast('လက်ကျန် Coins မလုံလောက်ပါ!');
-                return;
-            }
+            if (!acc) return showToast('အကောင့်နံပါတ် ထည့်သွင်းပါ!');
+            if (isNaN(amt) || amt < 5000) return showToast('အနည်းဆုံး ၅,၀၀၀ Coins မှ စထုတ်နိုင်ပါသည်!');
+            if (amt > coins) return showToast('လက်ကျန် Coins မလုံလောက်ပါ!');
 
             coins -= amt;
             var newWithdraw = {
@@ -797,24 +312,64 @@
                 date: new Date().toLocaleDateString('my-MM') + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
             };
 
-            withdrawHistory.unshift(newWithdraw);
-            saveHistory();
             syncBal();
-
-            if (window.submitWithdrawToFirebase) {
-                window.submitWithdrawToFirebase(newWithdraw);
-            }
-
+            if (window.submitWithdrawToFirebase) window.submitWithdrawToFirebase(newWithdraw);
             document.getElementById('payout-acc').value = '';
             document.getElementById('payout-amt').value = '';
             showToast('ငွေထုတ်ယူရန် တောင်းဆိုမှု အောင်မြင်ပါသည်!');
             goTab('friends');
         }
 
-        // --- LUCKY SPIN WHEEL (မူလပုံစံအတိုင်း အတိအကျ) ---
+        function renderHistory() {
+            var lp = document.getElementById('hist-payout-list');
+            var linkBox = document.getElementById('display-invite-link');
+            if(linkBox) linkBox.innerText = myInviteLink;
+            if(!lp) return;
+
+            if(withdrawHistory.length === 0){
+                lp.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:16px;">ငွေထုတ်ယူထားသော မှတ်တမ်း မရှိသေးပါ</div>';
+            } else {
+                var hHtml = '';
+                withdrawHistory.forEach(function(item){
+                    var stColor = item.status === 'အောင်မြင်' ? '#10b981' : item.status === 'ငြင်းပယ်' ? '#ef4444' : '#f59e0b';
+                    hHtml += `<div class="card" style="padding:12px 14px;margin-bottom:10px;">
+                      <div>
+                          <div style="font-weight:700;font-size:14px;color:#fff;">${escapeHtml(item.method)} (${escapeHtml(item.acc)})</div>
+                          <div style="font-size:11px;color:#8da2c4;">${escapeHtml(item.date || '')}</div>
+                      </div>
+                      <div style="text-align:right;">
+                        <div style="font-weight:700;font-size:14px;color:#ef4444;">-${Number(item.amt).toLocaleString()} Coins</div>
+                        <span style="font-size:11px;color:${stColor};font-weight:700;">${escapeHtml(item.status)}</span>
+                      </div>
+                    </div>`;
+                });
+                lp.innerHTML = hHtml;
+            }
+        }
+
+        function copyLink() {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(myInviteLink).then(() => showToast('Invite Link ကူးယူပြီးပါပြီ! 📋'));
+            } else {
+                showToast(myInviteLink);
+            }
+        }
+
+        function openAdminAuth() {
+            if (!window.checkIsAdmin || !window.checkIsAdmin()) {
+                return showToast('Admin ခွင့်ပြုချက် မရှိပါ! ❌');
+            }
+            document.getElementById('admin-modal').style.display = 'block';
+            if (window.fetchAdminWithdrawalsFromFirebase) window.fetchAdminWithdrawalsFromFirebase();
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        // Spin Wheel
         var wheelCanvas = document.getElementById('wheel-canvas');
         var wheelCtx = wheelCanvas ? wheelCanvas.getContext('2d') : null;
-
         var wheelPrizes = [
             { text: '+200 Pts', val: 200, color: '#ffd700' },
             { text: '+30 Pts',  val: 30,  color: '#38bdf8' },
@@ -825,329 +380,66 @@
             { text: '+500 Pts', val: 500, color: '#ffd700' },
             { text: '+15 Pts',  val: 15,  color: '#38bdf8' }
         ];
-
         var currentWheelAngle = 0;
         var isSpinning = false;
 
         function drawWheel() {
             if (!wheelCtx) return;
-            var num = wheelPrizes.length;
-            var arc = (2 * Math.PI) / num;
-            var cx = 260, cy = 260, r = 246;
-
+            var num = wheelPrizes.length, arc = (2 * Math.PI) / num, cx = 260, cy = 260, r = 246;
             wheelCtx.clearRect(0, 0, 520, 520);
-            var baseAngle = -Math.PI / 2;
-
             for (var i = 0; i < num; i++) {
-                var startAngle = baseAngle + i * arc;
-                var endAngle = startAngle + arc;
-                var midAngle = startAngle + arc / 2;
-
+                var startAngle = -Math.PI / 2 + i * arc;
                 wheelCtx.beginPath();
                 wheelCtx.moveTo(cx, cy);
-                wheelCtx.arc(cx, cy, r, startAngle, endAngle);
-                wheelCtx.closePath();
+                wheelCtx.arc(cx, cy, r, startAngle, startAngle + arc);
                 wheelCtx.fillStyle = '#0c1833';
                 wheelCtx.fill();
-
                 wheelCtx.strokeStyle = '#d4af37';
                 wheelCtx.lineWidth = 2.5;
                 wheelCtx.stroke();
 
                 wheelCtx.save();
                 wheelCtx.translate(cx, cy);
-                wheelCtx.rotate(midAngle);
+                wheelCtx.rotate(startAngle + arc / 2);
                 wheelCtx.textAlign = 'right';
-                wheelCtx.textBaseline = 'middle';
                 wheelCtx.fillStyle = wheelPrizes[i].color;
-                wheelCtx.font = 'bold 24px -apple-system, BlinkMacSystemFont, sans-serif';
+                wheelCtx.font = 'bold 24px sans-serif';
                 wheelCtx.fillText(wheelPrizes[i].text, r - 35, 0);
                 wheelCtx.restore();
             }
-
-            wheelCtx.beginPath();
-            wheelCtx.arc(cx, cy, r, 0, 2 * Math.PI);
-            wheelCtx.strokeStyle = '#ffd700';
-            wheelCtx.lineWidth = 4;
-            wheelCtx.stroke();
         }
 
         function spinWheel() {
             if (isSpinning) return;
             var spinBtn = document.getElementById('btn-spin');
             isSpinning = true;
-            if (spinBtn) { 
-                spinBtn.disabled = true; 
-                spinBtn.innerText = 'လှည့်နေပါသည်...'; 
-            }
+            if (spinBtn) { spinBtn.disabled = true; spinBtn.innerText = 'လှည့်နေပါသည်...'; }
 
             var prizeIndex = Math.floor(Math.random() * wheelPrizes.length);
-            var num = wheelPrizes.length;
-            var arcDeg = 360 / num;
-
+            var arcDeg = 360 / wheelPrizes.length;
             var targetOffset = 360 - (prizeIndex * arcDeg + arcDeg / 2);
-            var fullSpins = (5 + Math.floor(Math.random() * 3)) * 360;
-            currentWheelAngle += fullSpins + ((targetOffset - (currentWheelAngle % 360) + 360) % 360);
-
+            currentWheelAngle += 1800 + ((targetOffset - (currentWheelAngle % 360) + 360) % 360);
             wheelCanvas.style.transform = 'rotate(' + currentWheelAngle + 'deg)';
 
-            setTimeout(function() {
+            setTimeout(() => {
                 isSpinning = false;
-                if (spinBtn) { 
-                    spinBtn.disabled = false; 
-                    spinBtn.innerText = 'လှည့်မည် (Spin Now)'; 
-                }
-
+                if (spinBtn) { spinBtn.disabled = false; spinBtn.innerText = 'လှည့်မည် (Spin Now)'; }
                 var won = wheelPrizes[prizeIndex];
                 points += won.val;
                 syncBal();
-
-                rewardHistory.unshift({
-                    title: 'Lucky Spin Wheel (' + won.text + ')',
-                    amt: '+' + won.val + ' Pts',
-                    date: new Date().toLocaleDateString('my-MM') + ' ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-                });
-                saveHistory();
-
                 showToast('ဂုဏ်ယူပါသည်! ⭐ ' + won.text + ' ရရှိပါပြီ! 🎉');
             }, 4000);
         }
 
-        function renderLeaderboard() {
-            var list = document.getElementById('leaderboard-list');
-            var preview = document.getElementById('adm-leaderboard-preview');
-            if (!list) return;
-
-            var mockUsers = [
-                { name: 'Ko Aung (09***342)', pts: 12500 },
-                { name: 'Ma Thidar (09***891)', pts: 9800 },
-                { name: 'Mg Kyaw (09***654)', pts: 8400 },
-                { name: 'Htet Htet (09***219)', pts: 6200 },
-                { name: 'Zaw Min (09***004)', pts: 4900 }
-            ];
-
-            mockUsers.push({ name: myUserName + ' (You)', pts: points });
-            mockUsers.sort(function(a, b) { return b.pts - a.pts; });
-
-            var h = '';
-            var pPreview = '';
-            mockUsers.forEach(function(u, idx) {
-                var rank = idx + 1;
-                var medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
-                var isMe = u.name.includes('(You)');
-                var bg = isMe ? 'background:#1a2b55;border:1px solid #2990ff;' : 'background:#0b142d;';
-
-                h += '<div style="' + bg + 'padding:10px 14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;">' +
-                     '<div style="display:flex;align-items:center;gap:10px;">' +
-                       '<span style="font-weight:800;font-size:14px;width:24px;">' + medal + '</span>' +
-                       '<span style="font-size:13px;font-weight:600;' + (isMe ? 'color:#60a5fa;' : '') + '">' + escapeHtml(u.name) + '</span>' +
-                     '</div>' +
-                     '<span style="color:#ffd700;font-weight:700;font-size:14px;">⭐ ' + u.pts.toLocaleString() + '</span>' +
-                   '</div>';
-
-                if (idx < 5) {
-                    pPreview += '<div>' + medal + ' ' + escapeHtml(u.name) + ' - ⭐ ' + u.pts.toLocaleString() + '</div>';
-                }
-            });
-            list.innerHTML = h;
-            if (preview) preview.innerHTML = pPreview;
-        }
-
-        function renderWinnerAnnouncement() {
-            var box = document.getElementById('winner-announcement-box');
-            var titleElem = document.getElementById('winner-notice-title');
-            var descElem = document.getElementById('winner-notice-desc');
-            var chipsList = document.getElementById('winner-chips-list');
-            if (!box) return;
-
-            var notice = JSON.parse(localStorage.getItem('we_winner_notice'));
-            if (!notice || !notice.active) {
-                box.style.display = 'none';
-                return;
-            }
-
-            box.style.display = 'block';
-            titleElem.innerText = notice.title || 'Points ကံထူးရှင် ဆုကြေညာချက်';
-            descElem.innerText = notice.desc || '';
-            chipsList.innerHTML = '';
-
-            (notice.winners || []).forEach(function(w, i) {
-                chipsList.innerHTML += '<div style="background:rgba(255,215,0,0.2);border:1px solid #ffd700;color:#ffd700;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;">' +
-                                        '🏆 ' + (i+1) + '. ' + escapeHtml(w) +
-                                       '</div>';
-            });
-        }
-
-        // --- ADMIN PANEL FUNCTIONS (Google Admin Verification) ---
-        function openAdminAuth() {
-            if (!window.checkIsAdmin || !window.checkIsAdmin()) {
-                showToast('ဤနေရာသည် Admin သီးသန့်ဖြစ်ပါသည်။ သင့် Google အကောင့်တွင် Admin ခွင့်ပြုချက်မရှိပါ! ❌');
-                return;
-            }
-            document.getElementById('admin-modal').style.display = 'block';
-            renderAdminTasks();
-            renderAdminWithdraws();
-            renderLeaderboard();
-        }
-
-        function closeAdmin() {
-            document.getElementById('admin-modal').style.display = 'none';
-        }
-
-        function switchAdminTab(tab) {
-            ['tasks', 'winners', 'withdraws'].forEach(function(t) {
-                var sec = document.getElementById('adm-sec-' + t);
-                var btn = document.getElementById('adm-tab-btn-' + t);
-                if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
-                if (btn) btn.classList.toggle('active', t === tab);
-            });
-            if (tab === 'tasks') renderAdminTasks();
-            if (tab === 'withdraws') renderAdminWithdraws();
-            if (tab === 'winners') renderLeaderboard();
-        }
-
-        function adminAddTask() {
-            var title = document.getElementById('adm-title').value.trim();
-            var cat = document.getElementById('adm-cat').value;
-            var plat = document.getElementById('adm-plat').value;
-            var link = document.getElementById('adm-link').value.trim();
-            var reward = parseInt(document.getElementById('adm-reward').value, 10);
-
-            if (!title || !link || isNaN(reward) || reward <= 0) {
-                showToast('Task အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်ပါ!');
-                return;
-            }
-
-            var newTask = {
-                id: 't_' + Date.now(),
-                cat: cat,
-                plat: plat,
-                title: title,
-                link: link,
-                reward: reward
-            };
-
-            appTasks.push(newTask);
-            saveTasks();
-            renderTasksUI();
-            renderAdminTasks();
-            document.getElementById('adm-title').value = '';
-            document.getElementById('adm-link').value = '';
-            document.getElementById('adm-reward').value = '';
-            showToast('Task အသစ် ထည့်သွင်းပြီးပါပြီ! ✅');
-        }
-
-        function adminDeleteTask(id) {
-            appTasks = appTasks.filter(function(t) { return t.id !== id; });
-            saveTasks();
-            renderTasksUI();
-            renderAdminTasks();
-            showToast('Task ကို ဖျက်ပြီးပါပြီ!');
-        }
-
-        function renderAdminTasks() {
-            var list = document.getElementById('adm-task-list');
-            if (!list) return;
-            list.innerHTML = '';
-            appTasks.forEach(function(t) {
-                list.innerHTML += 
-                    '<div style="background:#121c38;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #1c2b55;">' +
-                      '<div style="min-width:0;flex:1;">' +
-                        '<div style="font-weight:700;font-size:13px;color:#fff;">' + escapeHtml(t.title) + '</div>' +
-                        '<div style="font-size:11px;color:#ffd700;">+' + t.reward + ' Coins · ' + t.cat + ' (' + t.plat + ')</div>' +
-                      '</div>' +
-                      '<button onclick="adminDeleteTask(\'' + t.id + '\')" style="background:#ef4444;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-left:8px;">ဖျက်မည်</button>' +
-                    '</div>';
-            });
-        }
-
-        function renderAdminWithdraws() {
-            var list = document.getElementById('adm-withdraw-list');
-            if (!list) return;
-            if (withdrawHistory.length === 0) {
-                list.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:15px;">ငွေထုတ်တောင်းဆိုမှု မရှိသေးပါ</div>';
-                return;
-            }
-            list.innerHTML = '';
-            withdrawHistory.forEach(function(item, idx) {
-                list.innerHTML += 
-                    '<div style="background:#0b142d;padding:12px;border-radius:10px;border:1px solid #1c2b55;margin-bottom:8px;">' +
-                      '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
-                        '<span style="font-weight:700;font-size:14px;color:#fff;">' + escapeHtml(item.method) + ' - ' + escapeHtml(item.acc) + '</span>' +
-                        '<span style="color:#ffd700;font-weight:700;">' + Number(item.amt).toLocaleString() + ' Coins</span>' +
-                      '</div>' +
-                      '<div style="font-size:11px;color:#8da2c4;margin-bottom:8px;">' + escapeHtml(item.userEmail || '') + ' | ' + escapeHtml(item.date) + ' | <b style="color:#38bdf8;">' + escapeHtml(item.status) + '</b></div>' +
-                      '<div style="display:flex;gap:6px;">' +
-                        '<button onclick="adminActionWithdraw(' + idx + ', \'Approved\')" style="flex:1;background:#10b981;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Approve</button>' +
-                        '<button onclick="adminActionWithdraw(' + idx + ', \'Rejected\')" style="flex:1;background:#ef4444;color:#fff;border:none;padding:6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Reject</button>' +
-                      '</div>' +
-                    '</div>';
-            });
-        }
-
-        function adminActionWithdraw(idx, action) {
-            if (withdrawHistory[idx]) {
-                withdrawHistory[idx].status = action === 'Approved' ? 'အောင်မြင်' : 'ငြင်းပယ်';
-                if (action === 'Rejected') {
-                    coins += withdrawHistory[idx].amt;
-                    syncBal();
-                }
-                saveHistory();
-                renderAdminWithdraws();
-                renderHistory();
-                showToast('ငွေထုတ်တောင်းဆိုမှုကို ' + action + ' ပြုလုပ်ပြီးပါပြီ!');
-            }
-        }
-
-        function adminSelectWinners() {
-            var count = parseInt(document.getElementById('adm-win-count').value, 10) || 3;
-            var title = document.getElementById('adm-win-title').value.trim();
-            var desc = document.getElementById('adm-win-desc').value.trim();
-
-            var winners = ['Ko Aung (09***342)', 'Ma Thidar (09***891)', 'Mg Kyaw (09***654)'];
-            if (count > 3) winners.push('Htet Htet (09***219)', 'Zaw Min (09***004)');
-            winners = winners.slice(0, count);
-
-            var notice = {
-                active: true,
-                title: title,
-                desc: desc,
-                winners: winners,
-                date: new Date().toLocaleDateString('my-MM')
-            };
-
-            localStorage.setItem('we_winner_notice', JSON.stringify(notice));
-            renderWinnerAnnouncement();
-            showToast('ကံထူးရှင်များ ရွေးချယ်ကြေညာပြီးပါပြီ! 👑');
-            closeAdmin();
-        }
-
-        function adminClearWinners() {
-            localStorage.removeItem('we_winner_notice');
-            renderWinnerAnnouncement();
-            showToast('ဆုကြေညာချက်ကို ဖယ်ရှားပြီးပါပြီ!');
-        }
-
-        function adminResetAllPoints() {
-            if (confirm("User အားလုံး၏ Points များကို 0 သို့ Reset ပြုလုပ်ရန် သေချာပါသလား?")) {
-                points = 0;
-                syncBal();
-                showToast('Points အားလုံးကို 0 သို့ Reset ပြုလုပ်ပြီးပါပြီ!');
-            }
-        }
-
-        window.addEventListener('load', function() {
-            drawWheel();
-        });
+        window.addEventListener('load', drawWheel);
     </script>
 
-    <!-- FIREBASE & GOOGLE AUTHENTICATION INTEGRATION SCRIPT -->
+    <!-- FIREBASE MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCEkiflBkTsZj1YqV_i8uZoENpIyAhCyGY",
             authDomain: "watchandearn-9c9bc.firebaseapp.com",
@@ -1161,131 +453,165 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
-
-        // ⚠️ သင့် Admin အဖြစ် အသုံးပြုမည့် Gmail လိပ်စာကို ဤနေရာတွင် ထည့်ပေးပါ
         const ADMIN_EMAIL = "aunghtet6580@gmail.com";
-
         var currentAuthUser = null;
 
-        // Admin ဟုတ်မဟုတ် စစ်ဆေးပေးသည့် function
-        window.checkIsAdmin = function() {
-            return currentAuthUser && currentAuthUser.email && (currentAuthUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+        window.checkIsAdmin = () => currentAuthUser && currentAuthUser.email && (currentAuthUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+
+        window.triggerGoogleSignIn = () => {
+            signInWithPopup(auth, provider).then(() => showToast("Login အောင်မြင်ပါသည်! 🎉")).catch(e => showToast("Login Error: " + e.message));
         };
 
-        // Google Sign In နှိပ်သည့်အခါ ခေါ်မည့် function
-        window.triggerGoogleSignIn = function() {
-            signInWithPopup(auth, provider).then((result) => {
-                showToast("Google အကောင့်ဖြင့် ဝင်ရောက်ပြီးပါပြီ! 🎉");
-            }).catch((error) => {
-                console.error("Google Auth error:", error);
-                showToast("Login မအောင်မြင်ပါ: " + error.message);
-            });
+        window.triggerGoogleSignOut = () => {
+            if (confirm("အကောင့်မှ ထွက်ရန် သေချာပါသလား?")) signOut(auth).then(() => showToast("အကောင့်မှ ထွက်ပြီးပါပြီ"));
         };
 
-        // Google Sign Out နှိပ်သည့်အခါ ခေါ်မည့် function
-        window.triggerGoogleSignOut = function() {
-            if (confirm("အကောင့်မှ ထွက်ရန် သေချာပါသလား?")) {
-                signOut(auth).then(() => {
-                    showToast("အကောင့်မှ ထွက်ပြီးပါပြီ");
-                });
-            }
-        };
-
-        // အကောင့် အခြေအနေ စောင့်ကြည့်ခြင်း
         onAuthStateChanged(auth, async (user) => {
             const overlay = document.getElementById('login-overlay');
-            const avatar = document.getElementById('user-avatar');
-            const nameElem = document.getElementById('user-display-name');
-            const emailElem = document.getElementById('user-email-text');
-
             if (user) {
                 currentAuthUser = user;
                 window.myUserId = user.uid;
                 window.myUserName = user.displayName || "Google User";
                 window.myUserEmail = user.email;
-                window.myInviteLink = "https://t.me/ATF_AIRDROP_bot?start=" + user.uid.substring(0, 10);
+                window.myInviteLink = "https://t.me/ATF_AIRDROP_bot?start=" + user.uid.substring(0, 8);
 
-                // UI ပြသမှု အပ်ဒိတ်လုပ်ခြင်း
                 overlay.style.display = 'none';
-                avatar.src = user.photoURL || "https://via.placeholder.com/28";
-                nameElem.innerText = user.displayName || "User";
-                emailElem.innerText = user.email;
+                document.getElementById('user-avatar').src = user.photoURL || "https://via.placeholder.com/28";
+                document.getElementById('user-display-name').innerText = user.displayName || "User";
+                document.getElementById('user-email-text').innerText = user.email;
 
-                if (window.checkIsAdmin()) {
-                    showToast("Admin အကောင့်ဖြင့် ဝင်ရောက်ထားပါသည် 👑");
-                }
-
-                // Firestore မှ အချက်အလက်ဖတ်ယူခြင်း
                 await loadUserData(user.uid);
+                listenToMyWithdrawals(user.uid);
+                fetchLiveLeaderboard();
             } else {
                 currentAuthUser = null;
                 overlay.style.display = 'flex';
-                nameElem.innerText = "အကောင့်ဝင်မထားပါ";
-                emailElem.innerText = "Please Sign In";
             }
         });
 
-        // Firestore မှ User အချက်အလက် ဖတ်ယူခြင်း
         async function loadUserData(uid) {
             try {
                 const userRef = doc(db, "users", uid);
                 const snap = await getDoc(userRef);
                 if (snap.exists()) {
                     const data = snap.data();
-                    window.coins = (typeof data.coins === 'number') ? data.coins : 572;
-                    window.points = (typeof data.points === 'number') ? data.points : 0;
-                    window.friends = (typeof data.friends === 'number') ? data.friends : 0;
+                    window.coins = data.coins || 572;
+                    window.points = data.points || 0;
                 } else {
-                    // အသစ်ဝင်လာသော Google User အတွက် အစပြုသတ်မှတ်ပေးခြင်း
                     await setDoc(userRef, {
                         uid: uid,
                         email: currentAuthUser.email,
-                        name: currentAuthUser.displayName,
+                        name: currentAuthUser.displayName || "User",
                         coins: 572,
                         points: 0,
-                        friends: 0,
                         createdAt: new Date().toISOString()
                     });
                     window.coins = 572;
                     window.points = 0;
-                    window.friends = 0;
                 }
                 syncBal();
-                renderTasksUI();
-                renderHistory();
-                renderWinnerAnnouncement();
-            } catch (err) {
-                console.error("Firestore user data read error:", err);
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // Coins & Points ပြောင်းလဲမှုများကို Firestore သို့ သိမ်းဆည်းခြင်း
         window.syncUserDataToFirebase = async function() {
             if (!currentAuthUser) return;
             try {
-                const userRef = doc(db, "users", currentAuthUser.uid);
-                await setDoc(userRef, {
+                await setDoc(doc(db, "users", currentAuthUser.uid), {
                     coins: window.coins,
                     points: window.points,
-                    friends: window.friends,
+                    name: window.myUserName,
                     lastActive: new Date().toISOString()
                 }, { merge: true });
-            } catch (e) {
-                console.log("Firebase sync note:", e.message);
-            }
+            } catch (e) { console.log(e); }
         };
 
-        // ငွေထုတ်တောင်းဆိုမှုကို Firestore သို့ ပို့ခြင်း
         window.submitWithdrawToFirebase = async function(withdrawData) {
             if (!currentAuthUser) return;
             try {
                 withdrawData.userEmail = currentAuthUser.email;
-                const wdRef = doc(db, "withdrawals", withdrawData.id);
-                await setDoc(wdRef, withdrawData);
-            } catch (e) {
-                console.log("Firebase withdraw save note:", e.message);
-            }
+                withdrawData.userId = currentAuthUser.uid;
+                withdrawData.createdAt = new Date().toISOString();
+                await setDoc(doc(db, "withdrawals", withdrawData.id), withdrawData);
+            } catch (e) { showToast("Error: " + e.message); }
         };
+
+        function listenToMyWithdrawals(uid) {
+            onSnapshot(query(collection(db, "withdrawals")), snap => {
+                const list = [];
+                snap.forEach(d => {
+                    const data = d.data();
+                    if (data.userId === uid) list.push(data);
+                });
+                window.withdrawHistory = list;
+                renderHistory();
+            });
+        }
+
+        window.fetchAdminWithdrawalsFromFirebase = async function() {
+            if (!window.checkIsAdmin()) return;
+            try {
+                const snap = await getDocs(query(collection(db, "withdrawals"), orderBy("createdAt", "desc")));
+                const list = [];
+                snap.forEach(d => list.push(d.data()));
+                renderAdminListUI(list);
+            } catch (e) { console.error(e); }
+        };
+
+        window.adminUpdateWithdrawStatusInFirestore = async function(id, newStatus) {
+            if (!window.checkIsAdmin()) return;
+            try {
+                await updateDoc(doc(db, "withdrawals", id), { status: newStatus });
+                showToast("တောင်းဆိုမှုကို " + newStatus + " ပြုလုပ်ပြီးပါပြီ! ✅");
+                window.fetchAdminWithdrawalsFromFirebase();
+            } catch (e) { showToast("Error: " + e.message); }
+        };
+
+        function renderAdminListUI(listData) {
+            const list = document.getElementById('adm-withdraw-list');
+            if (!list) return;
+            if (listData.length === 0) {
+                list.innerHTML = '<div style="color:#64748b;text-align:center;padding:15px;">ငွေထုတ်တောင်းဆိုမှု မရှိသေးပါ</div>';
+                return;
+            }
+            let h = '';
+            listData.forEach(item => {
+                const col = item.status === 'အောင်မြင်' ? '#10b981' : item.status === 'ငြင်းပယ်' ? '#ef4444' : '#f59e0b';
+                h += `<div style="background:#0b142d;padding:12px;border-radius:10px;border:1px solid #1c2b55;margin-bottom:8px;">
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="font-weight:700;color:#fff;">${escapeHtml(item.method)} - ${escapeHtml(item.acc)}</span>
+                        <span style="color:#ffd700;font-weight:700;">${Number(item.amt).toLocaleString()} Coins</span>
+                    </div>
+                    <div style="font-size:11px;color:#8da2c4;margin:4px 0 8px;">${escapeHtml(item.userEmail || '')} | <b style="color:${col};">${escapeHtml(item.status)}</b></div>
+                    <div style="display:flex;gap:6px;">
+                        <button onclick="window.adminUpdateWithdrawStatusInFirestore('${item.id}', 'အောင်မြင်')" style="flex:1;background:#10b981;color:#fff;border:none;padding:6px;border-radius:6px;font-weight:700;cursor:pointer;">Approve</button>
+                        <button onclick="window.adminUpdateWithdrawStatusInFirestore('${item.id}', 'ငြင်းပယ်')" style="flex:1;background:#ef4444;color:#fff;border:none;padding:6px;border-radius:6px;font-weight:700;cursor:pointer;">Reject</button>
+                    </div>
+                </div>`;
+            });
+            list.innerHTML = h;
+        }
+
+        async function fetchLiveLeaderboard() {
+            try {
+                const snap = await getDocs(query(collection(db, "users"), orderBy("points", "desc"), limit(10)));
+                const leaders = [];
+                snap.forEach(d => leaders.push(d.data()));
+                const list = document.getElementById('leaderboard-list');
+                if (!list) return;
+                let h = '';
+                leaders.forEach((u, i) => {
+                    const isMe = currentAuthUser && u.uid === currentAuthUser.uid;
+                    h += `<div style="background:${isMe ? '#1a2b55;border:1px solid #2990ff;' : '#0b142d;'}padding:10px 14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-weight:800;width:24px;">#${i+1}</span>
+                            <span style="font-size:13px;font-weight:600;${isMe ? 'color:#60a5fa;' : ''}">${escapeHtml(u.name || 'User')}</span>
+                        </div>
+                        <span style="color:#ffd700;font-weight:700;">⭐ ${(u.points || 0).toLocaleString()}</span>
+                    </div>`;
+                });
+                list.innerHTML = h;
+            } catch (e) { console.log(e); }
+        }
     </script>
 </body>
 </html>
