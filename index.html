@@ -49,7 +49,7 @@
         .adm-tab-btn { background: #0b142d; border: 1px solid #1c2b55; color: #8da2c4; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .adm-tab-btn.active { background: #1c85ff; color: #fff; border-color: #1c85ff; }
 
-        /* Login Overlay (သတ်မှတ်ထားချိန်မှသာ ပေါ်လာမည့် Popup) */
+        /* Login Overlay */
         #login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(7, 14, 34, 0.88); z-index: 99999999; display: none; align-items: center; justify-content: center; padding: 20px; }
         .login-card { position: relative; background: #121c38; border: 1px solid #1c85ff; border-radius: 20px; padding: 30px 24px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .btn-google { background: #fff; color: #000; border: none; border-radius: 12px; padding: 14px 20px; width: 100%; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -59,10 +59,10 @@
 <body>
     <div id="toast"></div>
 
-    <!-- GOOGLE LOGIN POPUP MODAL (အလိုအလျောက် မပေါ်စေဘဲ display:none ပြုလုပ်ထားသည်) -->
+    <!-- GOOGLE LOGIN POPUP MODAL -->
     <div id="login-overlay" style="display: none !important;">
         <div class="login-card">
-            <button onclick="document.getElementById('login-overlay').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#8da2c4;font-size:22px;cursor:pointer;">✕</button>
+            <button onclick="document.getElementById('login-overlay').style.setProperty('display', 'none', 'important')" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#8da2c4;font-size:22px;cursor:pointer;">✕</button>
             <div style="font-size: 40px; margin-bottom: 12px;">🪙</div>
             <h2 style="color: #ffd700; font-size: 22px; margin-bottom: 8px;">Watch and Earn</h2>
             <p style="color: #8da2c4; font-size: 13px; margin-bottom: 24px; line-height: 1.5;">
@@ -378,11 +378,10 @@
 
         function requireAuth(actionName) {
             if (!window.currentAuthUser) {
-                var overlay = document.getElementById('login-overlay');
-                if (overlay) {
-                    overlay.style.setProperty('display', 'flex', 'important');
-                }
                 showToast((actionName || 'ဤလုပ်ဆောင်ချက်') + ' ပြုလုပ်ရန် Google အကောင့် Sign in ဝင်ပေးပါ');
+                if (typeof window.triggerGoogleSignIn === 'function') {
+                    window.triggerGoogleSignIn();
+                }
                 return false;
             }
             return true;
@@ -392,7 +391,11 @@
             if (window.currentAuthUser) {
                 window.triggerGoogleSignOut();
             } else {
-                window.triggerGoogleSignIn();
+                if (typeof window.triggerGoogleSignIn === 'function') {
+                    window.triggerGoogleSignIn();
+                } else {
+                    showToast("Firebase စတင်နေပါသည်... စက္ကန့်အနည်းငယ် စောင့်ပါ");
+                }
             }
         }
 
@@ -1117,7 +1120,10 @@
             getFirestore, doc, getDoc, setDoc, updateDoc, collection, 
             getDocs, query, orderBy, limit, onSnapshot, where, increment 
         } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { 
+            getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, 
+            GoogleAuthProvider, onAuthStateChanged, signOut 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCEkiflBkTsZj1YqV_i8uZoENpIyAhCyGY",
@@ -1132,9 +1138,19 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
         const ADMIN_EMAIL = "aunghtet6580@gmail.com";
         window.currentAuthUser = null;
+
+        // Redirect ဖြင့် Login ဝင်ရောက်ခဲ့သော အချက်အလက်ကို စစ်ဆေးဖတ်ယူခြင်း
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                showToast("Google အကောင့်ဖြင့် ဝင်ရောက်ပြီးပါပြီ! 🎉");
+            }
+        }).catch((error) => {
+            console.error("Redirect login error:", error);
+        });
 
         // Referral Parameter ဖတ်ယူခြင်း
         let refParam = null;
@@ -1152,14 +1168,17 @@
             return window.currentAuthUser && window.currentAuthUser.email && (window.currentAuthUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
         };
 
+        // Mobile ဖုန်းများတွင် Popup ပိတ်ထားပါက Redirect ဖြင့် အလိုအလျောက်ဖွင့်မည့် Function
         window.triggerGoogleSignIn = function() {
+            showToast("Google အကောင့် ချိတ်ဆက်နေပါသည်...");
             signInWithPopup(auth, provider).then((result) => {
                 var overlay = document.getElementById('login-overlay');
                 if (overlay) overlay.style.setProperty('display', 'none', 'important');
                 showToast("Google အကောင့်ဖြင့် ဝင်ရောက်ပြီးပါပြီ! 🎉");
             }).catch((error) => {
-                console.error("Google Auth error:", error);
-                showToast("Login မအောင်မြင်ပါ: " + error.message);
+                console.log("Popup blocked or failed, switching to Redirect:", error);
+                // Popup ကို Browser က ပိတ်ထားပါက Redirect ဖြင့် တိုက်ရိုက်ဖွင့်ပေးခြင်း
+                signInWithRedirect(auth, provider);
             });
         };
 
@@ -1171,7 +1190,7 @@
             }
         };
 
-        // အရေးကြီး: စာမျက်နှာ ဖွင့်ချိန်တွင် Login Overlay Box ကို လုံးဝ ပေါ်မလာစေရန် အသေအချာ ပိတ်ခြင်း
+        // Auth အခြေအနေ စောင့်ကြည့်ခြင်း
         onAuthStateChanged(auth, async (user) => {
             const overlay = document.getElementById('login-overlay');
             if (overlay) {
