@@ -160,11 +160,11 @@
                             </svg>
                         </div>
                         <div style="min-width:0;">
-                            <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:3px;">Your Website Invite Link</div>
+                            <div style="font-weight:700;font-size:16px;color:#fff;margin-bottom:3px;">Your Invite Link</div>
                             <div id="display-invite-link" style="font-size:12px;color:#8da2c4;word-break:break-all;line-height:1.3;">Loading link...</div>
                         </div>
                     </div>
-                    <button onclick="copyLink()" style="background:#ffd000;color:#000;font-weight:800;font-size:14px;padding:10px 22px;border-radius:30px;border:none;cursor:pointer;flex-shrink:0;margin-left:10px;">Copy</button>
+                    <button onclick="shareInviteLink()" style="background:#ffd000;color:#000;font-weight:800;font-size:14px;padding:10px 20px;border-radius:30px;border:none;cursor:pointer;flex-shrink:0;margin-left:10px;">Share 🚀</button>
                 </div>
 
                 <!-- Card 2: Your Referrals -->
@@ -713,16 +713,37 @@
             }
         }
 
-        function copyLink() {
+        function shareInviteLink() {
             var link = myInviteLink;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(link).then(function() {
-                    showToast('Invite Link ကို Copy ကူးယူပြီးပါပြီ! 📋');
-                }).catch(function() {
-                    showToast('Link: ' + link);
+            var shareTitle = 'Watch and Earn';
+            var shareText = '🪙 Watch and Earn တွင် Coins များစုဆောင်းပြီး ငွေသားထုတ်ယူလိုက်ပါ! အခုပဲ ဝင်ရောက်ကစားရန် လင့်ခ်:\n' + link;
+
+            // ဖုန်း၏ မူရင်း Native Share Box (Telegram, Messenger, Viber စသည်တို့သို့ တိုက်ရိုက် Share နိုင်ရန်)
+            if (navigator.share) {
+                navigator.share({
+                    title: shareTitle,
+                    text: '🪙 Watch and Earn တွင် Coins များစုဆောင်းပြီး ငွေသားထုတ်ယူလိုက်ပါ!',
+                    url: link
+                }).then(function() {
+                    showToast('မျှဝေခြင်း အောင်မြင်ပါသည်! 🎉');
+                }).catch(function(err) {
+                    // Share မလုပ်ဘဲ Cancel လုပ်လိုက်ပါက Copy သာ ကူးပေးမည်
+                    copyToClipboard(shareText);
                 });
             } else {
-                showToast('Link: ' + link);
+                copyToClipboard(shareText);
+            }
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('Invite Link နှင့် စာသားကို Copy ကူးပြီးပါပြီ! 📋');
+                }).catch(function() {
+                    prompt('Invite Link ကို Copy ကူးပါ:', text);
+                });
+            } else {
+                prompt('Invite Link ကို Copy ကူးပါ:', text);
             }
         }
 
