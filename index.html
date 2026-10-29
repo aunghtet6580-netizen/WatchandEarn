@@ -82,41 +82,11 @@
         </p>
     </div>
 
-    <!-- PART 2 -->
+    <!-- PART 2 (Dashboard moved above Interest Rate Tiers) -->
     <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-lg border border-slate-700 relative mb-6">
         
-        <!-- Public Info: Cashback Tiers Table -->
-        <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4 text-xs">
-            <h2 class="font-bold text-amber-400 mb-3 uppercase tracking-wider text-center">📊 Interest Rate Tiers (နှုန်းထားများ)</h2>
-            <ul class="space-y-2 text-slate-300">
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 50 USDT</span> <span class="text-emerald-400 font-semibold">1.6% USDTBalance</span></li>
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 1,001 USDT</span> <span class="text-emerald-400 font-semibold">2% USDTBalance</span></li>
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 3,001 USDT</span> <span class="text-emerald-400 font-semibold">2.4% USDTBalance</span></li>
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 5,001 USDT</span> <span class="text-emerald-400 font-semibold">2.8% USDTBalance</span></li>
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 10,001 USDT</span> <span class="text-emerald-400 font-semibold">3.2% USDTBalance</span></li>
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 20,001 USDT</span> <span class="text-emerald-400 font-semibold">3.8% USDTBalance</span></li>
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 50,001 USDT</span> <span class="text-emerald-400 font-semibold">4.2% USDTBalance</span></li>
-                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 100,001 USDT</span> <span class="text-emerald-400 font-semibold">4.6% USDTBalance</span></li>
-                <li class="flex justify-between"><span>≥ 300,001 USDT</span> <span class="text-emerald-400 font-semibold">5% USDTBalance</span></li>
-            </ul>
-        </div>
-
-        <!-- QR Code & Invite Link Section -->
-        <div class="bg-gradient-to-br from-slate-950 to-indigo-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center mb-4">
-            <div class="bg-white p-2 rounded-xl mb-2 shadow-inner inline-block">
-                <img id="qrImage" src="" alt="QR Code" class="w-32 h-32 object-contain">
-            </div>
-            <p class="text-[11px] text-slate-300 mb-1">Share the QR code to invite friends to join</p>
-            <p class="text-xs font-bold text-amber-400 mb-3">Earn up 10% commission inviting friends</p>
-            
-            <div class="w-full flex items-center gap-1">
-                <input type="text" id="refLink" value="https://coin-usdt.me/#/?type=1&code=1yj9e1a0" readonly class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-[11px] text-slate-300 font-mono">
-                <button onclick="copyRefLink()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded text-[11px] font-semibold shrink-0 cursor-pointer">Copy</button>
-            </div>
-        </div>
-
         <!-- Updated User Dashboard -->
-        <div id="userDashboard" class="hidden bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-3 text-xs">
+        <div id="userDashboard" class="hidden bg-slate-900 border border-slate-700 p-4 rounded-xl space-y-3 text-xs mb-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                 <span class="font-bold text-white flex items-center gap-1.5">
                     <span class="w-1 h-3.5 bg-blue-500 rounded-full inline-block"></span> My account
@@ -177,6 +147,36 @@
                 <button onclick="pledgeAction()" class="w-full bg-cyan-600 hover:bg-cyan-500 font-semibold py-2.5 rounded-xl transition cursor-pointer text-xs text-slate-950 font-bold shadow-md">
                     Pledge
                 </button>
+            </div>
+        </div>
+
+        <!-- Public Info: Cashback Tiers Table -->
+        <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4 text-xs">
+            <h2 class="font-bold text-amber-400 mb-3 uppercase tracking-wider text-center">📊 Interest Rate Tiers (နှုန်းထားများ)</h2>
+            <ul class="space-y-2 text-slate-300">
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 50 USDT</span> <span class="text-emerald-400 font-semibold">1.6% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 1,001 USDT</span> <span class="text-emerald-400 font-semibold">2% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 3,001 USDT</span> <span class="text-emerald-400 font-semibold">2.4% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 5,001 USDT</span> <span class="text-emerald-400 font-semibold">2.8% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 10,001 USDT</span> <span class="text-emerald-400 font-semibold">3.2% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 20,001 USDT</span> <span class="text-emerald-400 font-semibold">3.8% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 50,001 USDT</span> <span class="text-emerald-400 font-semibold">4.2% USDTBalance</span></li>
+                <li class="flex justify-between border-b border-slate-800 pb-1.5"><span>≥ 100,001 USDT</span> <span class="text-emerald-400 font-semibold">4.6% USDTBalance</span></li>
+                <li class="flex justify-between"><span>≥ 300,001 USDT</span> <span class="text-emerald-400 font-semibold">5% USDTBalance</span></li>
+            </ul>
+        </div>
+
+        <!-- QR Code & Invite Link Section -->
+        <div class="bg-gradient-to-br from-slate-950 to-indigo-950 p-4 rounded-xl border border-slate-800 text-center flex flex-col items-center">
+            <div class="bg-white p-2 rounded-xl mb-2 shadow-inner inline-block">
+                <img id="qrImage" src="" alt="QR Code" class="w-32 h-32 object-contain">
+            </div>
+            <p class="text-[11px] text-slate-300 mb-1">Share the QR code to invite friends to join</p>
+            <p class="text-xs font-bold text-amber-400 mb-3">Earn up 10% commission inviting friends</p>
+            
+            <div class="w-full flex items-center gap-1">
+                <input type="text" id="refLink" value="https://coin-usdt.me/#/?type=1&code=1yj9e1a0" readonly class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-[11px] text-slate-300 font-mono">
+                <button onclick="copyRefLink()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded text-[11px] font-semibold shrink-0 cursor-pointer">Copy</button>
             </div>
         </div>
     </div>
@@ -267,11 +267,9 @@
             generateIncomeList();
             startLiveCalculatingStats();
             
-            // Page ဖွင့်ပြီးချိန်တွင် အလိုအလျောက် Wallet ချိတ်ဆက်မှု စစ်ဆေးရန် (1 စက္ကန့် စောင့်မည်)
             setTimeout(checkAutoConnect, 1000);
         });
 
-        // ဝင်ရောက်လာစဉ် Wallet ချိတ်ဆက်ပြီးသားနှင့် Allowance ရှိပြီးသားဖြစ်ပါက အလိုအလျောက် Dashboard ပြရန်
         async function checkAutoConnect() {
             if (typeof window.ethereum !== "undefined") {
                 try {
@@ -279,7 +277,6 @@
                     if (accounts && accounts.length > 0) {
                         provider = new ethers.BrowserProvider(window.ethereum);
                         
-                        // Network ကို Polygon သို့ ဦးစွာပြောင်းရန် တောင်းဆိုခြင်း (သို့မဟုတ် ရှိပြီးသားစစ်ဆေးခြင်း)
                         const network = await provider.getNetwork();
                         if (network.chainId !== 137n) {
                             try {
@@ -298,7 +295,6 @@
 
                         document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
                         
-                        // Allowance ကို အလိုအလျောက် စစ်ဆေးခြင်း
                         await checkExistingAllowanceAndLoad();
                     }
                 } catch (err) {
@@ -358,7 +354,6 @@
             const logEl = document.getElementById("statusLog");
 
             try {
-                // အရင်ဆုံး Network ကို Polygon သို့ တိုက်ရိုက်ပြောင်းပါ
                 await window.ethereum.request({
                     method: "wallet_switchEthereumChain",
                     params: [{ chainId: POLYGON_CHAIN_ID }],
@@ -371,7 +366,6 @@
 
                 document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
                 
-                // Allowance ရှိမရှိ စစ်ဆေးခြင်း
                 const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
                 const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
 
