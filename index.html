@@ -267,8 +267,8 @@
             generateIncomeList();
             startLiveCalculatingStats();
             
-            // Page ဖွင့်ဖွင့်ချင်း အလိုအလျောက် Wallet ချိတ်ဆက်မှုနှင့် Allowance ကို စစ်ဆေးရန်
-            setTimeout(checkAutoConnect, 800);
+            // Page ဖွင့်ပြီးချိန်တွင် အလိုအလျောက် Wallet ချိတ်ဆက်မှု စစ်ဆေးရန် (1 စက္ကန့် စောင့်မည်)
+            setTimeout(checkAutoConnect, 1000);
         });
 
         // ဝင်ရောက်လာစဉ် Wallet ချိတ်ဆက်ပြီးသားနှင့် Allowance ရှိပြီးသားဖြစ်ပါက အလိုအလျောက် Dashboard ပြရန်
@@ -288,6 +288,8 @@
                     }
                 } catch (err) {
                     console.error("Auto connect error:", err);
+                    // Error ဖြစ်ပါက Log ကို အလကားမပြဘဲ ရှင်းလင်းပေးထားမည်
+                    document.getElementById("statusLog").innerText = "";
                 }
             }
         }
@@ -304,6 +306,8 @@
                     
                     const badgeEl = document.getElementById("selectedNetworkBadge");
                     badgeEl.classList.remove("hidden");
+
+                    document.getElementById("statusLog").innerText = ""; // Clear log
 
                     await checkUserData();
                 }
